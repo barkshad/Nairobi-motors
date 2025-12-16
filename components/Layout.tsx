@@ -3,6 +3,19 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { COMPANY_INFO } from '../constants';
 
+// --- Page Transition Wrapper ---
+export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+    animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+    exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
+    transition={{ type: "spring", stiffness: 100, damping: 20, mass: 1 }}
+    className="w-full"
+  >
+    {children}
+  </motion.div>
+);
+
 export const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -51,18 +64,18 @@ export const Header: React.FC = () => {
                   to={link.path}
                   className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors group"
                 >
-                  <span className={`relative z-10 ${isActive(link.path) || (!scrolled && location.pathname === '/') ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                  <span className={`relative z-10 transition-colors duration-300 ${isActive(link.path) || (!scrolled && location.pathname === '/') ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
                     {link.name}
                   </span>
                   {isActive(link.path) && (
                     <motion.div 
                       layoutId="nav-pill"
-                      className="absolute inset-0 bg-brand-red rounded-full shadow-lg shadow-red-900/40"
+                      className="absolute inset-0 bg-brand-red/80 backdrop-blur-sm rounded-full shadow-lg shadow-red-900/40"
                       transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     />
                   )}
                   {!isActive(link.path) && (
-                     <div className="absolute inset-0 bg-white/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-200"></div>
+                     <div className="absolute inset-0 bg-white/5 rounded-full scale-0 group-hover:scale-100 transition-transform duration-200 ease-out origin-center"></div>
                   )}
                 </Link>
               ))}
@@ -73,7 +86,10 @@ export const Header: React.FC = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
             >
-              <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
+              <motion.i 
+                animate={{ rotate: isOpen ? 180 : 0 }}
+                className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-xl`}
+              ></motion.i>
             </button>
           </div>
         </div>
@@ -85,7 +101,7 @@ export const Header: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass-dark border-t border-gray-800 overflow-hidden"
+            className="md:hidden glass-dark border-t border-gray-800 overflow-hidden backdrop-blur-3xl"
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
               {navLinks.map((link, i) => (
@@ -93,7 +109,7 @@ export const Header: React.FC = () => {
                   key={link.name}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: i * 0.1, type: "spring" }}
                 >
                     <Link
                     to={link.path}
@@ -134,9 +150,13 @@ export const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               {['facebook-f', 'instagram', 'twitter', 'linkedin-in'].map((icon) => (
-                  <a key={icon} href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-brand-red hover:text-white hover:border-brand-red transition-all duration-300">
+                  <motion.a 
+                    whileHover={{ scale: 1.1, backgroundColor: '#D90429', borderColor: '#D90429', color: '#fff' }}
+                    key={icon} href="#" 
+                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300"
+                  >
                       <i className={`fab fa-${icon}`}></i>
-                  </a>
+                  </motion.a>
               ))}
             </div>
           </div>
@@ -208,19 +228,19 @@ export const StickyMobileActions: React.FC = () => {
     <motion.div 
         initial={{ y: 100 }}
         animate={{ y: 0 }}
-        transition={{ delay: 1 }}
+        transition={{ delay: 1, type: "spring", stiffness: 100 }}
         className="fixed bottom-4 left-4 right-4 z-50 md:hidden flex gap-3"
     >
       <a
         href={`tel:${COMPANY_INFO.phone}`}
-        className="flex-1 glass-panel bg-white/90 backdrop-blur-xl text-brand-dark rounded-2xl py-4 flex items-center justify-center shadow-premium"
+        className="flex-1 glass-panel bg-white/90 backdrop-blur-xl text-brand-dark rounded-2xl py-4 flex items-center justify-center shadow-premium active:scale-95 transition-transform"
       >
         <i className="fas fa-phone-alt mr-2 text-lg"></i>
         <span className="font-bold text-sm">Call</span>
       </a>
       <a
         href={`https://wa.me/${COMPANY_INFO.whatsapp}`}
-        className="flex-1 bg-brand-red/90 backdrop-blur-xl text-white rounded-2xl py-4 flex items-center justify-center shadow-lg shadow-red-600/30"
+        className="flex-1 bg-brand-red/90 backdrop-blur-xl text-white rounded-2xl py-4 flex items-center justify-center shadow-lg shadow-red-600/30 active:scale-95 transition-transform"
       >
         <i className="fab fa-whatsapp mr-2 text-xl"></i>
         <span className="font-bold text-sm">WhatsApp</span>
@@ -239,7 +259,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className="flex flex-col min-h-screen font-sans bg-slate-50 selection:bg-brand-red selection:text-white">
       <Header />
-      {/* Added AnimatePresence wrapper handled in page components for exit animations if needed */}
       <main className="flex-grow pt-0 min-h-screen"> 
         {children}
       </main>
