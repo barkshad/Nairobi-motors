@@ -18,7 +18,9 @@ import { COMPANY_INFO } from "../constants";
 
 const CARS_COLLECTION = "cars";
 const INQUIRIES_COLLECTION = "inquiries";
+// Changed collection ID to force a content reset from old 'main' document
 const CONTENT_COLLECTION = "site_content";
+const CONTENT_DOC_ID = "kiambu_main_v1";
 
 // Map Firestore doc to Car type
 const mapDocToCar = (doc: any): Car => {
@@ -133,7 +135,7 @@ export const storeService = {
 
   // --- SITE CONTENT ---
   getSiteContent: async (): Promise<SiteContent> => {
-    // Default fallback content if DB is empty
+    // Default fallback content reflecting Kiambu Autospares
     const defaults: SiteContent = {
       home: {
         heroTitle: "Kiambu's Premier Auto Hub.",
@@ -147,7 +149,7 @@ export const storeService = {
       about: {
         title: "About Kiambu Autospares",
         subtitle: "Serving Our Community Since 2018",
-        story: "Kiambu Autospares Showroom started with a simple mission: to bring reliable cars and parts closer to home...",
+        story: "Kiambu Autospares Showroom started with a simple mission: to bring reliable cars and parts closer to home. We believe in transparency, quality, and community service.",
         mission: "To be the most trusted automotive partner in Kiambu County.",
         valuesIntegrity: "Genuine parts, genuine mileage, genuine people.",
         valuesQuality: "We rigorously test every vehicle and spare part we sell.",
@@ -157,7 +159,7 @@ export const storeService = {
         title: "Visit Our Showroom",
         description: "See our collection at our Kiambu Road location.",
         experienceTitle: "Convenience & Quality",
-        experienceText: "Located conveniently along Kiambu Road, we offer a hassle-free environment to inspect our stock."
+        experienceText: "Located conveniently along Kiambu Road, we offer a hassle-free environment to inspect our stock. Our expert team is ready to assist you."
       },
       contact: {
         phone: COMPANY_INFO.phone,
@@ -169,7 +171,7 @@ export const storeService = {
     };
 
     try {
-      const docRef = doc(db, CONTENT_COLLECTION, "main");
+      const docRef = doc(db, CONTENT_COLLECTION, CONTENT_DOC_ID);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -190,7 +192,7 @@ export const storeService = {
   },
 
   updateSiteContent: async (content: Partial<SiteContent>): Promise<void> => {
-    const docRef = doc(db, CONTENT_COLLECTION, "main");
+    const docRef = doc(db, CONTENT_COLLECTION, CONTENT_DOC_ID);
     // Merge true allows us to update only specific sections
     await setDoc(docRef, content, { merge: true });
   }

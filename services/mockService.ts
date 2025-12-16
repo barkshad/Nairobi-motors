@@ -1,9 +1,9 @@
 import { Car, Inquiry } from "../types";
 import { INITIAL_CARS } from "../constants";
 
-const CARS_KEY = "npm_cars_v1";
-const INQUIRIES_KEY = "npm_inquiries_v1";
-const ADMIN_TOKEN_KEY = "npm_admin_token";
+const CARS_KEY = "kas_cars_v1";
+const INQUIRIES_KEY = "kas_inquiries_v1";
+const ADMIN_TOKEN_KEY = "kas_admin_token";
 
 export const mockService = {
   // --- CARS ---

@@ -33,7 +33,7 @@ const Login: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
             <div className="w-12 h-12 bg-brand-dark rounded-full mx-auto flex items-center justify-center text-white mb-4">
                 <i className="fas fa-user-shield"></i>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900">Admin Login</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Kiambu Admin Portal</h2>
             <p className="text-slate-500 text-sm mt-2">Secure access to dealership management</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -541,32 +541,42 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   );
 };
 
-// --- Root Admin ---
 const Admin: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      setIsAuthenticated(!!currentUser);
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
+    await signOut(auth);
     setIsAuthenticated(false);
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center text-brand-red"><i className="fas fa-circle-notch fa-spin text-4xl"></i></div>;
+  const handleLocalLogin = () => {
+      setIsAuthenticated(true);
+  };
 
-  return (user || isAuthenticated) ? (
-    <AdminDashboard onLogout={handleLogout} />
-  ) : (
-    <Login onLogin={() => setIsAuthenticated(true)} />
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !user) {
+    return <Login onLogin={handleLocalLogin} />;
+  }
+
+  return <AdminDashboard onLogout={handleLogout} />;
 };
 
 export default Admin;
