@@ -1,18 +1,20 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getAnalytics } from "firebase/analytics";
 
-// REPLACE WITH YOUR FIREBASE CONFIG
-// Get this from: Firebase Console > Project Settings > General > Your Apps
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDF3FnrxPYa6Hj_0lIT59FP9CSCIk7aS0w",
+  authDomain: "mati-foundation-2d67e.firebaseapp.com",
+  projectId: "mati-foundation-2d67e",
+  storageBucket: "mati-foundation-2d67e.firebasestorage.app",
+  messagingSenderId: "769000463528",
+  appId: "1:769000463528:web:a67cbe264e7b9e4d71369d",
+  measurementId: "G-69NRSQM60F"
 };
 
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const analytics = getAnalytics(app);
