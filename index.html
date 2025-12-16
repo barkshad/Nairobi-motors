@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 
     <script>
       tailwind.config = {
@@ -19,6 +20,7 @@
           fontFamily: {
             sans: ['"Plus Jakarta Sans"', 'sans-serif'],
             display: ['"Oswald"', 'sans-serif'],
+            mono: ['"Space Mono"', 'monospace'],
           },
           extend: {
             colors: {
@@ -57,6 +59,17 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overflow-x: hidden;
+        cursor: none; /* Hide default cursor for custom one */
+      }
+      
+      /* Mobile fallback: show cursor */
+      @media (hover: none) and (pointer: coarse) {
+          body {
+              cursor: auto;
+          }
+          .custom-cursor {
+              display: none !important;
+          }
       }
 
       /* Cinematic Noise Overlay */

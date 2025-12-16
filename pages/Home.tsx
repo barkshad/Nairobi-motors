@@ -4,7 +4,6 @@ import {
     motion, 
     useScroll, 
     useTransform, 
-    Variants, 
     useSpring, 
     useMotionValue, 
     useVelocity, 
@@ -17,7 +16,7 @@ import { PageTransition } from '../components/Layout';
 
 // --- VELOCITY SCROLL COMPONENT ---
 interface ParallaxProps {
-  children: string;
+  children: React.ReactNode;
   baseVelocity: number;
 }
 
@@ -55,6 +54,31 @@ function ParallaxText({ children, baseVelocity = 100 }: ParallaxProps) {
   );
 }
 
+// --- SCRAMBLE TEXT EFFECT ---
+const ScrambleText: React.FC<{ text: string }> = ({ text }) => {
+    const [display, setDisplay] = useState(text);
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890!@#$%^&*()";
+
+    useEffect(() => {
+        let iterations = 0;
+        const interval = setInterval(() => {
+            setDisplay(
+                text.split("").map((letter, index) => {
+                    if (index < iterations) {
+                        return text[index];
+                    }
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join("")
+            );
+            if (iterations >= text.length) clearInterval(interval);
+            iterations += 1 / 3;
+        }, 30);
+        return () => clearInterval(interval);
+    }, [text]);
+
+    return <span>{display}</span>;
+}
+
 // --- 3D TILT CARD COMPONENT ---
 const TiltCard: React.FC<{ icon: string; title: string; text: string; delay: number }> = ({ icon, title, text, delay }) => {
     const x = useMotionValue(0);
@@ -83,7 +107,7 @@ const TiltCard: React.FC<{ icon: string; title: string; text: string; delay: num
                 x.set(0);
                 y.set(0);
             }}
-            className="relative perspective-1000 cursor-none"
+            className="relative perspective-1000"
         >
             <motion.div 
                 className="glass-dark p-10 rounded-[2rem] border border-white/10 h-full transform-style-3d group overflow-hidden relative"
@@ -118,23 +142,6 @@ const Home: React.FC = () => {
     };
     fetchData();
   }, []);
-
-  // Text Reveal Animation
-  const sentence = {
-    hidden: { opacity: 1 },
-    visible: {
-        opacity: 1,
-        transition: {
-            delay: 0.2,
-            staggerChildren: 0.03
-        }
-    }
-  };
-
-  const letter = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { opacity: 1, y: 0 }
-  };
 
   if(!content) return <div className="h-screen w-full bg-slate-950 flex items-center justify-center"><div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div></div>;
 
@@ -188,18 +195,9 @@ const Home: React.FC = () => {
                        </span>
                    </motion.div>
 
-                  <motion.h1 
-                    className="text-6xl md:text-8xl lg:text-9xl font-extrabold text-white leading-[0.9] tracking-tighter mb-8 drop-shadow-2xl"
-                    variants={sentence}
-                    initial="hidden"
-                    animate="visible"
-                  >
-                     {content.heroTitle.split("").map((char, index) => (
-                         <motion.span key={char + "-" + index} variants={letter}>
-                            {char}
-                         </motion.span>
-                     ))}
-                  </motion.h1>
+                  <h1 className="text-6xl md:text-8xl lg:text-9xl font-extrabold text-white leading-[0.9] tracking-tighter mb-8 drop-shadow-2xl font-mono">
+                     <ScrambleText text={content.heroTitle} />
+                  </h1>
                   
                   <motion.p 
                     initial={{ opacity: 0, y: 20 }}

@@ -1,7 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { COMPANY_INFO } from '../constants';
+
+// --- Custom Cursor ---
+const CustomCursor: React.FC = () => {
+    const cursorRef = useRef<HTMLDivElement>(null);
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+    const [isHovering, setIsHovering] = useState(false);
+
+    useEffect(() => {
+        const moveCursor = (e: MouseEvent) => {
+            setMousePosition({ x: e.clientX, y: e.clientY });
+        };
+        
+        const handleMouseOver = (e: MouseEvent) => {
+            const target = e.target as HTMLElement;
+            if (target.tagName === 'A' || target.tagName === 'BUTTON' || target.closest('a') || target.closest('button')) {
+                setIsHovering(true);
+            } else {
+                setIsHovering(false);
+            }
+        };
+
+        window.addEventListener('mousemove', moveCursor);
+        window.addEventListener('mouseover', handleMouseOver);
+
+        return () => {
+            window.removeEventListener('mousemove', moveCursor);
+            window.removeEventListener('mouseover', handleMouseOver);
+        };
+    }, []);
+
+    return (
+        <>
+            <motion.div
+                className="custom-cursor fixed top-0 left-0 w-4 h-4 bg-brand-red rounded-full pointer-events-none z-[100] mix-blend-difference"
+                animate={{
+                    x: mousePosition.x - 8,
+                    y: mousePosition.y - 8,
+                    scale: isHovering ? 4 : 1,
+                }}
+                transition={{
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 15,
+                    mass: 0.1
+                }}
+            />
+            <motion.div
+                className="custom-cursor fixed top-0 left-0 w-12 h-12 border border-brand-red rounded-full pointer-events-none z-[100] opacity-50"
+                animate={{
+                    x: mousePosition.x - 24,
+                    y: mousePosition.y - 24,
+                    scale: isHovering ? 1.5 : 1,
+                    borderColor: isHovering ? 'transparent' : '#D90429'
+                }}
+                transition={{
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 25,
+                    mass: 0.2 // More lag for outer ring
+                }}
+            />
+        </>
+    );
+};
 
 // --- Page Transition Wrapper ---
 export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -20,6 +84,12 @@ export const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -38,101 +108,109 @@ export const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <motion.nav 
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 80, damping: 20, delay: 0.5 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'py-4' : 'py-8'}`}
-    >
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-500`}>
-        <div className={`
-            flex items-center justify-between h-16 px-8 rounded-full transition-all duration-500
-            ${scrolled ? 'glass-dark shadow-neon bg-slate-900/90 border border-white/10 backdrop-blur-xl' : 'bg-transparent'}
-        `}>
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-extrabold tracking-tighter text-white uppercase flex items-center gap-3 group">
-              <motion.span 
-                whileHover={{ rotate: 90 }}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-lg ${scrolled ? 'bg-brand-red' : 'bg-white text-slate-900'}`}
-              >
-                  <i className="fas fa-gem"></i>
-              </motion.span>
-              <span className="tracking-[0.15em] hidden sm:block text-sm">Kiambu <span className={scrolled ? 'text-white' : 'text-brand-red'}>Auto</span></span>
-            </Link>
-          </div>
-          
-          <div className="hidden md:block">
-            <div className="flex items-baseline space-x-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.path}
-                  className="relative px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors group overflow-hidden"
+    <>
+      {/* Scroll Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 bg-brand-red z-[100] origin-left"
+        style={{ scaleX }}
+      />
+    
+      <motion.nav 
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 80, damping: 20, delay: 0.5 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'py-4' : 'py-8'}`}
+      >
+        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-500`}>
+          <div className={`
+              flex items-center justify-between h-16 px-8 rounded-full transition-all duration-500
+              ${scrolled ? 'glass-dark shadow-neon bg-slate-900/90 border border-white/10 backdrop-blur-xl' : 'bg-transparent'}
+          `}>
+            <div className="flex items-center">
+              <Link to="/" className="text-xl font-extrabold tracking-tighter text-white uppercase flex items-center gap-3 group">
+                <motion.span 
+                  whileHover={{ rotate: 90 }}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-lg ${scrolled ? 'bg-brand-red' : 'bg-white text-slate-900'}`}
                 >
-                  <span className={`relative z-10 transition-colors duration-300 ${isActive(link.path) ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
-                    {link.name}
-                  </span>
-                  {isActive(link.path) && (
-                    <motion.div 
-                      layoutId="nav-bg"
-                      className="absolute inset-0 bg-brand-red rounded-full shadow-glow"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  {/* Hover background for non-active links */}
-                  {!isActive(link.path) && (
-                      <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-full"></div>
-                  )}
-                </Link>
-              ))}
+                    <i className="fas fa-gem"></i>
+                </motion.span>
+                <span className="tracking-[0.15em] hidden sm:block text-sm">Kiambu <span className={scrolled ? 'text-white' : 'text-brand-red'}>Auto</span></span>
+              </Link>
             </div>
-          </div>
-          
-          <div className="-mr-2 flex md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
-            >
-              <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
-            </button>
+            
+            <div className="hidden md:block">
+              <div className="flex items-baseline space-x-2">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    className="relative px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors group overflow-hidden"
+                  >
+                    <span className={`relative z-10 transition-colors duration-300 ${isActive(link.path) ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                      {link.name}
+                    </span>
+                    {isActive(link.path) && (
+                      <motion.div 
+                        layoutId="nav-bg"
+                        className="absolute inset-0 bg-brand-red rounded-full shadow-glow"
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                      />
+                    )}
+                    {/* Hover background for non-active links */}
+                    {!isActive(link.path) && (
+                        <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-full"></div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+            
+            <div className="-mr-2 flex md:hidden">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
+              >
+                <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0, scale: 0.95 }}
-            animate={{ opacity: 1, height: 'auto', scale: 1 }}
-            exit={{ opacity: 0, height: 0, scale: 0.95 }}
-            className="md:hidden glass-dark border border-white/10 overflow-hidden backdrop-blur-3xl mx-4 mt-2 rounded-3xl shadow-2xl"
-          >
-            <div className="px-4 pt-6 pb-8 space-y-2">
-              {navLinks.map((link, i) => (
-                <motion.div
-                  key={link.name}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                    <Link
-                    to={link.path}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-6 py-4 rounded-2xl text-sm font-bold uppercase tracking-wider ${
-                        isActive(link.path)
-                        ? 'bg-brand-red text-white shadow-glow'
-                        : 'text-gray-300 hover:text-white hover:bg-white/5'
-                    }`}
-                    >
-                    {link.name}
-                    </Link>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.nav>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0, scale: 0.95 }}
+              animate={{ opacity: 1, height: 'auto', scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.95 }}
+              className="md:hidden glass-dark border border-white/10 overflow-hidden backdrop-blur-3xl mx-4 mt-2 rounded-3xl shadow-2xl"
+            >
+              <div className="px-4 pt-6 pb-8 space-y-2">
+                {navLinks.map((link, i) => (
+                  <motion.div
+                    key={link.name}
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: i * 0.05 }}
+                  >
+                      <Link
+                      to={link.path}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-6 py-4 rounded-2xl text-sm font-bold uppercase tracking-wider ${
+                          isActive(link.path)
+                          ? 'bg-brand-red text-white shadow-glow'
+                          : 'text-gray-300 hover:text-white hover:bg-white/5'
+                      }`}
+                      >
+                      {link.name}
+                      </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.nav>
+    </>
   );
 };
 
@@ -268,7 +346,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   }, [pathname]);
 
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-slate-50 selection:bg-brand-red selection:text-white">
+    <div className="flex flex-col min-h-screen font-sans bg-slate-50 selection:bg-brand-red selection:text-white cursor-none">
+      <CustomCursor />
       <Header />
       <main className="flex-grow pt-0 min-h-screen"> 
         {children}
