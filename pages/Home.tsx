@@ -16,8 +16,8 @@ import { PageTransition } from '../components/Layout';
 
 // --- VELOCITY SCROLL COMPONENT ---
 interface ParallaxProps {
-  children: React.ReactNode;
-  baseVelocity: number;
+  children?: React.ReactNode;
+  baseVelocity?: number;
 }
 
 function ParallaxText({ children, baseVelocity = 100 }: ParallaxProps) {
@@ -32,7 +32,7 @@ function ParallaxText({ children, baseVelocity = 100 }: ParallaxProps) {
   const directionFactor = useRef<number>(1);
 
   useAnimationFrame((t, delta) => {
-    let moveBy = directionFactor.current * baseVelocity * (delta / 1000);
+    let moveBy = directionFactor.current * (baseVelocity || 0) * (delta / 1000);
     if (velocityFactor.get() < 0) {
       directionFactor.current = -1;
     } else if (velocityFactor.get() > 0) {
@@ -135,7 +135,12 @@ const Home: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       const allCars = await storeService.getCars();
-      setFeaturedCars(allCars.filter(c => c.isFeatured).slice(0, 3));
+      
+      // Shuffle cars to give all inventory a chance to be featured
+      const shuffled = [...allCars].sort(() => 0.5 - Math.random());
+      
+      // Select top 3 from the shuffled list
+      setFeaturedCars(shuffled.slice(0, 3));
       
       const siteContent = await storeService.getSiteContent();
       setContent(siteContent.home);

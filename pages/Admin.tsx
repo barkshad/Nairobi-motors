@@ -174,6 +174,14 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     setView('add-car');
   };
 
+  const removeExistingImage = (urlToRemove: string) => {
+      if(!window.confirm("Remove this image? Change will be saved when you click 'Save Vehicle'.")) return;
+      setCarForm(prev => ({
+          ...prev,
+          images: prev.images?.filter(url => url !== urlToRemove)
+      }));
+  };
+
   const handleSaveCar = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -545,7 +553,27 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                     <div className="lg:col-span-1 space-y-6">
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-20">
                             <h3 className="font-bold text-slate-800 mb-4 border-b pb-2">Media Gallery</h3>
-                            <div className="mb-6"><label className={labelClass}>Vehicle Images</label><div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative group"><input type="file" multiple accept="image/*" onChange={e => {if (e.target.files) setImageFiles(Array.from(e.target.files));}} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" /><i className="fas fa-images text-3xl text-gray-300 group-hover:text-brand-red mb-2 transition-colors"></i><p className="text-sm text-gray-500 font-medium">Click to upload photos</p></div>{(carForm.images?.length > 0 || previewUrls.length > 0) && (<div className="mt-4 grid grid-cols-3 gap-2">{carForm.images?.map((url, i) => (<div key={`exist-${i}`} className="aspect-square rounded-lg overflow-hidden border border-gray-200 relative group"><img src={url} className="w-full h-full object-cover" /><div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs">Existing</div></div>))}{previewUrls.map((url, i) => (<div key={`new-${i}`} className="aspect-square rounded-lg overflow-hidden border-2 border-green-400 relative"><img src={url} className="w-full h-full object-cover" /></div>))}</div>)}</div>
+                            <div className="mb-6"><label className={labelClass}>Vehicle Images</label><div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative group"><input type="file" multiple accept="image/*" onChange={e => {if (e.target.files) setImageFiles(Array.from(e.target.files));}} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" /><i className="fas fa-images text-3xl text-gray-300 group-hover:text-brand-red mb-2 transition-colors"></i><p className="text-sm text-gray-500 font-medium">Click to upload photos</p></div>
+                                {(carForm.images?.length > 0 || previewUrls.length > 0) && (
+                                    <div className="mt-4 grid grid-cols-3 gap-2">
+                                        {carForm.images?.map((url, i) => (
+                                            <div key={`exist-${i}`} className="aspect-square rounded-lg overflow-hidden border border-gray-200 relative group">
+                                                <img src={url} className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <button type="button" onClick={() => removeExistingImage(url)} className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 shadow-lg transform transition-transform hover:scale-110">
+                                                        <i className="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {previewUrls.map((url, i) => (
+                                            <div key={`new-${i}`} className="aspect-square rounded-lg overflow-hidden border-2 border-green-400 relative">
+                                                <img src={url} className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                             <div className="mb-6"><label className={labelClass}>Walkaround Video</label><div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer relative group"><input type="file" accept="video/*" onChange={e => {if (e.target.files && e.target.files[0]) setVideoFile(e.target.files[0]);}} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" /><i className="fas fa-video text-3xl text-gray-300 group-hover:text-brand-red mb-2 transition-colors"></i><p className="text-sm text-gray-500 font-medium">Click to upload video</p></div>{(videoPreviewUrl || carForm.videoUrl) && (<div className="mt-4 rounded-lg overflow-hidden border border-gray-200 bg-black"><video src={videoPreviewUrl || carForm.videoUrl} controls className="w-full aspect-video" /></div>)}</div>
                             <div className="pt-4 border-t border-gray-100"><label className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"><div className="relative flex items-center"><input type="checkbox" checked={carForm.isFeatured} onChange={e => setCarForm({...carForm, isFeatured: e.target.checked})} className="peer h-4 w-4 opacity-0 absolute" /><div className="w-10 h-5 bg-gray-300 rounded-full peer-checked:bg-brand-red transition-colors"></div><div className="w-4 h-4 bg-white rounded-full absolute left-0.5 top-0.5 peer-checked:translate-x-5 transition-transform"></div></div><span className="text-sm font-medium text-slate-700">Feature on Homepage</span></label></div>
                             <button type="submit" disabled={isSubmitting} className={`w-full mt-6 py-4 rounded-xl font-bold text-white shadow-xl shadow-red-500/20 transition-all active:scale-[0.98] ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-brand-red hover:bg-red-700'}`}>{isSubmitting ? <span><i className="fas fa-spinner fa-spin"></i> Saving...</span> : <span><i className="fas fa-save mr-2"></i> Save Vehicle</span>}</button>

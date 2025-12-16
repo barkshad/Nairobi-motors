@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import { storeService } from '../services/store';
 import { Car, CarCondition } from '../types';
 import { CAR_MAKES } from '../constants';
@@ -9,6 +10,7 @@ import { PageTransition } from '../components/Layout';
 const Inventory: React.FC = () => {
   const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -24,6 +26,14 @@ const Inventory: React.FC = () => {
     };
     fetchCars();
   }, []);
+
+  // Handle URL Search Params
+  useEffect(() => {
+      const query = searchParams.get('search');
+      if (query) {
+          setSearchTerm(query);
+      }
+  }, [searchParams]);
 
   const filteredCars = useMemo(() => {
     return cars.filter(car => {

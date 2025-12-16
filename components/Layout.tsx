@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { COMPANY_INFO } from '../constants';
 
@@ -83,7 +83,10 @@ export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ childr
 export const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -96,6 +99,15 @@ export const Header: React.FC = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if(searchQuery.trim()) {
+          navigate(`/inventory?search=${encodeURIComponent(searchQuery)}`);
+          setIsSearchOpen(false);
+          setIsOpen(false);
+      }
+  }
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -138,7 +150,7 @@ export const Header: React.FC = () => {
               </Link>
             </div>
             
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-6">
               <div className="flex items-baseline space-x-2">
                 {navLinks.map((link) => (
                   <Link
@@ -163,9 +175,52 @@ export const Header: React.FC = () => {
                   </Link>
                 ))}
               </div>
+
+               {/* Desktop Search */}
+               <div className="relative">
+                   <AnimatePresence>
+                       {isSearchOpen ? (
+                           <motion.form
+                                initial={{ width: 0, opacity: 0 }}
+                                animate={{ width: 200, opacity: 1 }}
+                                exit={{ width: 0, opacity: 0 }}
+                                onSubmit={handleSearchSubmit}
+                                className="relative"
+                           >
+                               <input 
+                                    autoFocus
+                                    type="text" 
+                                    placeholder="Search cars..." 
+                                    className="w-full bg-white/10 border border-white/20 rounded-full py-2 px-4 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-brand-red"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onBlur={() => !searchQuery && setIsSearchOpen(false)}
+                               />
+                               <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                                   <i className="fas fa-search"></i>
+                               </button>
+                           </motion.form>
+                       ) : (
+                           <motion.button 
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                onClick={() => setIsSearchOpen(true)}
+                                className="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-colors"
+                           >
+                               <i className="fas fa-search"></i>
+                           </motion.button>
+                       )}
+                   </AnimatePresence>
+               </div>
             </div>
             
-            <div className="-mr-2 flex md:hidden">
+            <div className="-mr-2 flex md:hidden gap-3">
+               <button
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                  className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
+               >
+                   <i className="fas fa-search"></i>
+               </button>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
@@ -176,7 +231,31 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
+        {/* Mobile Search & Menu */}
         <AnimatePresence>
+            {isSearchOpen && (
+                 <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="md:hidden px-4 mb-2 overflow-hidden"
+                 >
+                     <form onSubmit={handleSearchSubmit} className="relative">
+                        <input 
+                            autoFocus
+                            type="text" 
+                            placeholder="Search inventory..." 
+                            className="w-full bg-slate-900/90 border border-white/20 rounded-xl py-4 px-6 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-red backdrop-blur-xl"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                             <i className="fas fa-search"></i>
+                        </button>
+                     </form>
+                 </motion.div>
+            )}
+
           {isOpen && (
             <motion.div 
               initial={{ opacity: 0, height: 0, scale: 0.95 }}
