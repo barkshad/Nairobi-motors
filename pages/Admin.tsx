@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { storeService } from '../services/store';
+import { uploadToCloudinary } from '../services/cloudinary';
 import { Car, CarCondition, CarStatus, FuelType, Transmission, Inquiry, SiteContent } from '../types';
 import { CAR_MAKES } from '../constants';
 import { formatPrice } from '../components/CarComponents';
@@ -90,6 +91,10 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [content, setContent] = useState<SiteContent | null>(null);
   const [contentTab, setContentTab] = useState<'home' | 'about' | 'showroom' | 'contact'>('home');
   const [contentSaving, setContentSaving] = useState(false);
+  
+  // Content Upload State
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null);
+  const [heroVideoFile, setHeroVideoFile] = useState<File | null>(null);
 
   // Car Form State
   const initialFormState: Partial<Car> = {
@@ -113,7 +118,7 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [carForm, setCarForm] = useState(initialFormState);
   const [featuresInput, setFeaturesInput] = useState('');
   
-  // Handling file uploads
+  // Handling file uploads for Cars
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -200,10 +205,29 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     if(!content) return;
     setContentSaving(true);
     try {
-        await storeService.updateSiteContent(content);
+        let updatedHome = { ...content.home };
+        
+        // Upload new hero image if selected
+        if (heroImageFile) {
+            const res = await uploadToCloudinary(heroImageFile);
+            updatedHome.heroBackgroundImage = res.secure_url;
+        }
+
+        // Upload new hero video if selected
+        if (heroVideoFile) {
+             const res = await uploadToCloudinary(heroVideoFile);
+             updatedHome.heroBackgroundVideo = res.secure_url;
+        }
+
+        const finalContent = { ...content, home: updatedHome };
+        
+        await storeService.updateSiteContent(finalContent);
+        setHeroImageFile(null);
+        setHeroVideoFile(null);
         alert('Website content updated successfully!');
         refreshData();
     } catch (e) {
+        console.error(e);
         alert('Failed to update content');
     } finally {
         setContentSaving(false);
@@ -291,6 +315,37 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                             <div><label className={labelClass}>Hero Title</label><input className={inputClass} value={content.home.heroTitle} onChange={(e) => updateContent('home', 'heroTitle', e.target.value)} /></div>
                             <div><label className={labelClass}>Hero Subtitle</label><textarea className={inputClass} rows={2} value={content.home.heroSubtitle} onChange={(e) => updateContent('home', 'heroSubtitle', e.target.value)} /></div>
                             <div><label className={labelClass}>Hero Button Text</label><input className={inputClass} value={content.home.heroButtonText} onChange={(e) => updateContent('home', 'heroButtonText', e.target.value)} /></div>
+                            
+                            <h3 className="font-bold text-lg mt-8 mb-4">Hero Background Media</h3>
+                            
+                            {/* Hero Image Upload */}
+                            <div className="mb-4">
+                                <label className={labelClass}>Background Image</label>
+                                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center gap-4">
+                                    <div className="w-20 h-20 bg-gray-200 rounded overflow-hidden shrink-0">
+                                         {heroImageFile ? (
+                                             <img src={URL.createObjectURL(heroImageFile)} className="w-full h-full object-cover" />
+                                         ) : (
+                                             <img src={content.home.heroBackgroundImage} className="w-full h-full object-cover" />
+                                         )}
+                                    </div>
+                                    <input type="file" accept="image/*" onChange={(e) => { if(e.target.files) setHeroImageFile(e.target.files[0]) }} className="text-sm" />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Leave empty to keep current image.</p>
+                            </div>
+
+                            {/* Hero Video Upload */}
+                            <div className="mb-4">
+                                <label className={labelClass}>Background Video (Optional - Overrides Image)</label>
+                                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center gap-4">
+                                    <div className="w-20 h-20 bg-gray-900 rounded overflow-hidden shrink-0 flex items-center justify-center text-white">
+                                         {(heroVideoFile || content.home.heroBackgroundVideo) ? <i className="fas fa-video"></i> : <i className="fas fa-ban text-gray-500"></i>}
+                                    </div>
+                                    <input type="file" accept="video/*" onChange={(e) => { if(e.target.files) setHeroVideoFile(e.target.files[0]) }} className="text-sm" />
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">Recommended: MP4, optimized for web background.</p>
+                            </div>
+
                             <h3 className="font-bold text-lg mt-8 mb-4">Why Choose Us Section</h3>
                             <div><label className={labelClass}>Section Title</label><input className={inputClass} value={content.home.whyChooseUsTitle} onChange={(e) => updateContent('home', 'whyChooseUsTitle', e.target.value)} /></div>
                             <div><label className={labelClass}>Section Text</label><textarea className={inputClass} rows={3} value={content.home.whyChooseUsText} onChange={(e) => updateContent('home', 'whyChooseUsText', e.target.value)} /></div>

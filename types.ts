@@ -69,6 +69,8 @@ export interface HomeContent {
   heroButtonText: string;
   whyChooseUsTitle: string;
   whyChooseUsText: string;
+  heroBackgroundImage?: string;
+  heroBackgroundVideo?: string;
 }
 
 export interface AboutContent {

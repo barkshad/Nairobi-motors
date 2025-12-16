@@ -140,7 +140,9 @@ export const storeService = {
         heroSubtitle: "Curating Kenya's finest selection of foreign used and locally maintained vehicles.",
         heroButtonText: "View Inventory",
         whyChooseUsTitle: "The Premium Standard",
-        whyChooseUsText: "We don't just sell cars; we sell confidence. Experience the difference of a dealership built on integrity and quality."
+        whyChooseUsText: "We don't just sell cars; we sell confidence. Experience the difference of a dealership built on integrity and quality.",
+        heroBackgroundImage: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=80",
+        heroBackgroundVideo: ""
       },
       about: {
         title: "About Nairobi Premium Motors",
@@ -170,7 +172,15 @@ export const storeService = {
       const docRef = doc(db, CONTENT_COLLECTION, "main");
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        return { ...defaults, ...docSnap.data() } as SiteContent;
+        const data = docSnap.data();
+        return {
+           ...defaults, 
+           ...data,
+           home: { ...defaults.home, ...data.home },
+           about: { ...defaults.about, ...data.about },
+           showroom: { ...defaults.showroom, ...data.showroom },
+           contact: { ...defaults.contact, ...data.contact }
+        } as SiteContent;
       }
       return defaults;
     } catch (error) {

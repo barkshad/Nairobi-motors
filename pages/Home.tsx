@@ -54,11 +54,22 @@ const Home: React.FC = () => {
             style={{ y: y1 }}
             className="absolute inset-0 z-0"
         >
-            <img 
-                src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=80" 
-                alt="Luxury Car Background" 
-                className="w-full h-[120%] object-cover object-center brightness-[0.6]"
-            />
+            {content.heroBackgroundVideo ? (
+                <video
+                    src={content.heroBackgroundVideo}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-[120%] object-cover object-center brightness-[0.5]"
+                />
+            ) : (
+                <img 
+                    src={content.heroBackgroundImage || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=80"}
+                    alt="Luxury Car Background" 
+                    className="w-full h-[120%] object-cover object-center brightness-[0.6]"
+                />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/40 to-transparent" />
         </motion.div>
 
