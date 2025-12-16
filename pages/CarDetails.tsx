@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { mockService } from '../services/mockService';
+import { storeService } from '../services/store';
 import { Car } from '../types';
 import { formatPrice } from '../components/CarComponents';
 import { COMPANY_INFO } from '../constants';
@@ -12,25 +12,34 @@ const CarDetails: React.FC = () => {
   const [activeImage, setActiveImage] = useState<string>('');
   const [inquiryForm, setInquiryForm] = useState({ name: '', phone: '', message: '' });
   const [inquirySent, setInquirySent] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (id) {
-      const foundCar = mockService.getCarById(id);
-      setCar(foundCar);
-      if (foundCar && foundCar.images.length > 0) {
-        setActiveImage(foundCar.images[0]);
+    const fetchCar = async () => {
+      if (id) {
+        const foundCar = await storeService.getCarById(id);
+        setCar(foundCar);
+        if (foundCar && foundCar.images.length > 0) {
+          setActiveImage(foundCar.images[0]);
+        }
       }
-    }
+      setLoading(false);
+    };
+    fetchCar();
   }, [id]);
 
-  if (!car) {
-    return <div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div></div>;
+  if (loading) {
+     return <div className="min-h-screen flex items-center justify-center"><div className="w-12 h-12 border-4 border-brand-red border-t-transparent rounded-full animate-spin"></div></div>;
   }
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  if (!car) {
+    return <div className="min-h-screen flex items-center justify-center">Car not found.</div>;
+  }
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    mockService.addInquiry({
+    await storeService.addInquiry({
         ...inquiryForm,
         carId: car.id,
         carName: `${car.make} ${car.model}`

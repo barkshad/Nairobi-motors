@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { mockService } from '../services/mockService';
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+import { storeService } from '../services/store';
 import { Car, CarCondition, CarStatus, FuelType, Transmission, Inquiry } from '../types';
 import { CAR_MAKES } from '../constants';
 import { formatPrice } from '../components/CarComponents';
 
-// --- Login Component ---
-const Login: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+// --- Login Component (Firebase) ---
+const Login: React.FC = () => {
+  const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (mockService.login(pass)) {
-      onLogin();
-    } else {
-      setError('Invalid password (try: admin123)');
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Check your Firebase Auth settings.');
     }
   };
 
@@ -23,6 +26,16 @@ const Login: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
       <div className="bg-white p-8 rounded shadow-lg w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Admin Login</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input 
+              type="email" 
+              className="mt-1 w-full border border-gray-300 rounded p-2"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@example.com"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Password</label>
             <input 
@@ -41,7 +54,7 @@ const Login: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 };
 
 // --- Main Admin Dashboard ---
-const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
+const AdminDashboard: React.FC = () => {
   const [view, setView] = useState<'cars' | 'inquiries' | 'add-car'>('cars');
   const [cars, setCars] = useState<Car[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -58,7 +71,7 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     fuelType: FuelType.Petrol,
     condition: CarCondition.ForeignUsed,
     status: CarStatus.Available,
-    images: [''],
+    images: [],
     description: '',
     color: '',
     engineSize: '',
@@ -66,21 +79,32 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     isFeatured: false,
   };
   const [carForm, setCarForm] = useState(initialFormState);
-  const [imageInput, setImageInput] = useState('');
-  const [featureInput, setFeatureInput] = useState('');
+  
+  // Handling file uploads
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const refreshData = () => {
-    setCars(mockService.getCars());
-    setInquiries(mockService.getInquiries());
+  const refreshData = async () => {
+    const [c, i] = await Promise.all([storeService.getCars(), storeService.getInquiries()]);
+    setCars(c);
+    setInquiries(i);
   };
 
   useEffect(() => {
     refreshData();
   }, []);
 
-  const handleDeleteCar = (id: string) => {
-    if (window.confirm('Delete this car?')) {
-      mockService.deleteCar(id);
+  // Update previews when files change
+  useEffect(() => {
+    const urls = imageFiles.map(file => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    return () => urls.forEach(url => URL.revokeObjectURL(url));
+  }, [imageFiles]);
+
+  const handleDeleteCar = async (id: string) => {
+    if (window.confirm('Delete this car? This action cannot be undone.')) {
+      await storeService.deleteCar(id);
       refreshData();
     }
   };
@@ -88,20 +112,34 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const handleEditCar = (car: Car) => {
     setEditingCar(car);
     setCarForm(car);
+    setImageFiles([]); // Clear new file input
     setView('add-car');
   };
 
-  const handleSaveCar = (e: React.FormEvent) => {
+  const handleSaveCar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingCar) {
-      mockService.updateCar(editingCar.id, carForm);
-    } else {
-      mockService.addCar(carForm as Car);
+    setIsSubmitting(true);
+    
+    try {
+      if (editingCar) {
+        // Updating existing car
+        await storeService.updateCar(editingCar.id, carForm, imageFiles);
+      } else {
+        // Adding new car
+        await storeService.addCar(carForm as Omit<Car, "id" | "createdAt" | "images">, imageFiles);
+      }
+      
+      setEditingCar(null);
+      setCarForm(initialFormState);
+      setImageFiles([]);
+      setView('cars');
+      refreshData();
+    } catch (err) {
+      alert("Failed to save car. Check console.");
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
     }
-    setEditingCar(null);
-    setCarForm(initialFormState);
-    setView('cars');
-    refreshData();
   };
 
   return (
@@ -109,11 +147,11 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       {/* Admin Nav */}
       <div className="bg-brand-dark text-white px-6 py-4 flex justify-between items-center shadow-md">
         <h1 className="font-bold text-xl">Nairobi Premium CMS</h1>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
           <button onClick={() => setView('cars')} className={`hover:text-gray-300 ${view === 'cars' ? 'text-brand-red font-bold' : ''}`}>Inventory</button>
           <button onClick={() => setView('inquiries')} className={`hover:text-gray-300 ${view === 'inquiries' ? 'text-brand-red font-bold' : ''}`}>Inquiries</button>
           <button onClick={() => { setEditingCar(null); setCarForm(initialFormState); setView('add-car'); }} className={`hover:text-gray-300 ${view === 'add-car' ? 'text-brand-red font-bold' : ''}`}>Add Car</button>
-          <button onClick={() => { mockService.logout(); onLogout(); }} className="text-gray-400 hover:text-white ml-4 border-l pl-4 border-gray-600">Logout</button>
+          <button onClick={() => signOut(auth)} className="text-gray-400 hover:text-white ml-4 border-l pl-4 border-gray-600">Logout</button>
         </div>
       </div>
 
@@ -134,7 +172,7 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                   {cars.map(car => (
                     <tr key={car.id} className="border-b hover:bg-gray-50">
                       <td className="p-4">
-                        <img src={car.images[0]} className="w-16 h-12 object-cover rounded" alt="thumb" />
+                        {car.images[0] && <img src={car.images[0]} className="w-16 h-12 object-cover rounded" alt="thumb" />}
                       </td>
                       <td className="p-4">
                         <div className="font-bold">{car.make} {car.model}</div>
@@ -251,19 +289,36 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                         <textarea className="w-full border p-2 rounded" rows={3} value={carForm.description} onChange={e => setCarForm({...carForm, description: e.target.value})} required />
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium">Image URLs (One per line)</label>
-                        <textarea 
-                            className="w-full border p-2 rounded font-mono text-sm" 
-                            rows={3} 
-                            value={imageInput || carForm.images?.join('\n')} 
+                    <div className="bg-gray-50 p-4 rounded border border-dashed border-gray-300">
+                        <label className="block text-sm font-medium mb-2">Upload Images</label>
+                        <input 
+                            type="file" 
+                            multiple 
+                            accept="image/*"
                             onChange={e => {
-                                setImageInput(e.target.value);
-                                setCarForm({...carForm, images: e.target.value.split('\n').filter(s => s.trim() !== '')});
+                                if (e.target.files) {
+                                    setImageFiles(Array.from(e.target.files));
+                                }
                             }}
-                            placeholder="https://example.com/car.jpg"
+                            className="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-brand-red file:text-white
+                                hover:file:bg-red-700
+                            "
                         />
-                        <p className="text-xs text-gray-500">Paste image links here.</p>
+                        {/* Previews */}
+                        <div className="flex gap-2 mt-4 overflow-x-auto pb-2">
+                             {/* Existing Images */}
+                             {carForm.images?.map((url, i) => (
+                                <img key={`exist-${i}`} src={url} className="h-20 w-20 object-cover rounded border border-gray-200" alt="existing" />
+                             ))}
+                             {/* New Previews */}
+                             {previewUrls.map((url, i) => (
+                                 <img key={`new-${i}`} src={url} className="h-20 w-20 object-cover rounded border border-green-300" alt="new" />
+                             ))}
+                        </div>
                     </div>
 
                      <div>
@@ -275,7 +330,13 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
                     <div className="flex justify-end pt-4">
                          <button type="button" onClick={() => setView('cars')} className="mr-4 px-6 py-2 border rounded text-gray-700 hover:bg-gray-50">Cancel</button>
-                         <button type="submit" className="px-6 py-2 bg-brand-red text-white rounded font-bold hover:bg-red-700">Save Vehicle</button>
+                         <button 
+                            type="submit" 
+                            disabled={isSubmitting}
+                            className={`px-6 py-2 bg-brand-red text-white rounded font-bold hover:bg-red-700 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                         >
+                            {isSubmitting ? 'Saving...' : 'Save Vehicle'}
+                         </button>
                     </div>
                 </div>
 
@@ -289,16 +350,23 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
 // --- Root Admin Component ---
 const Admin: React.FC = () => {
-  const [authed, setAuthed] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setAuthed(mockService.isAuthenticated());
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
-  return authed ? (
-    <AdminDashboard onLogout={() => setAuthed(false)} />
+  if (loading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
+
+  return user ? (
+    <AdminDashboard />
   ) : (
-    <Login onLogin={() => setAuthed(true)} />
+    <Login />
   );
 };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { mockService } from '../services/mockService';
+import { storeService } from '../services/store';
 import { Car, CarCondition } from '../types';
 import { CAR_MAKES } from '../constants';
 import { CarCard } from '../components/CarComponents';
@@ -16,10 +16,12 @@ const Inventory: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<number>(15000000);
 
   useEffect(() => {
-    setTimeout(() => {
-        setCars(mockService.getCars());
-        setLoading(false);
-    }, 600);
+    const fetchCars = async () => {
+      const data = await storeService.getCars();
+      setCars(data);
+      setLoading(false);
+    };
+    fetchCars();
   }, []);
 
   const filteredCars = useMemo(() => {

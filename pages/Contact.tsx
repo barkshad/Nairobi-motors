@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { COMPANY_INFO } from '../constants';
-import { mockService } from '../services/mockService';
+import { storeService } from '../services/store';
 
 const Contact: React.FC = () => {
     const [form, setForm] = useState({ name: '', phone: '', message: '' });
     const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        mockService.addInquiry({ ...form });
+        await storeService.addInquiry({ ...form });
         setSubmitted(true);
     };
 

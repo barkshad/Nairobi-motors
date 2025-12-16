@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, Variants } from 'framer-motion';
-import { mockService } from '../services/mockService';
+import { storeService } from '../services/store';
 import { Car } from '../types';
 import { CarCard } from '../components/CarComponents';
 
@@ -12,8 +12,11 @@ const Home: React.FC = () => {
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   useEffect(() => {
-    const allCars = mockService.getCars();
-    setFeaturedCars(allCars.filter(c => c.isFeatured).slice(0, 3));
+    const fetchCars = async () => {
+      const allCars = await storeService.getCars();
+      setFeaturedCars(allCars.filter(c => c.isFeatured).slice(0, 3));
+    };
+    fetchCars();
   }, []);
 
   const containerVariants: Variants = {
@@ -141,7 +144,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Why Choose Us - Glass Cards */}
+      {/* Why Choose Us */}
       <section className="py-32 bg-brand-dark relative overflow-hidden">
         {/* Abstract Backgrounds */}
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-slate-800 to-transparent opacity-30"></div>
