@@ -333,7 +333,7 @@ const Home: React.FC = () => {
         <section className="h-[600px] relative bg-slate-900">
              <div className="absolute inset-0 opacity-40 mix-blend-luminosity hover:mix-blend-normal transition-all duration-700">
                  <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15955.166412891965!2d36.7827885!3d-1.2995545!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f109983990479%3A0x6331902263303685!2sNgong%20Rd%2C%20Nairobi!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske" 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d63826.53634123531!2d36.804153399999995!3d-1.171542!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f386915037d4f%3A0x6543b57356236b56!2sKiambu!5e0!3m2!1sen!2ske!4v1709214000000!5m2!1sen!2ske" 
                     width="100%" 
                     height="100%" 
                     style={{ border: 0, filter: 'grayscale(100%) contrast(1.2) brightness(0.8)' }} 
