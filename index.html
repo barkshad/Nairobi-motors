@@ -1,21 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Nairobi Premium Motors</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    
+    <!-- Premium Fonts: Plus Jakarta Sans for a modern, automotive feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
     <script>
       tailwind.config = {
         theme: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
           extend: {
             colors: {
               brand: {
                 red: '#D90429',
+                redHover: '#b90322',
                 dark: '#2B2D42',
                 gray: '#8D99AE',
                 light: '#EDF2F4',
+                offWhite: '#F8FAFC',
+              }
+            },
+            boxShadow: {
+              'premium': '0 10px 40px -10px rgba(0,0,0,0.1)',
+              'premium-hover': '0 20px 50px -10px rgba(0,0,0,0.15)',
+            },
+            animation: {
+              'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+              'fade-in': 'fadeIn 1s ease-out forwards',
+            },
+            keyframes: {
+              fadeInUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
               }
             }
           }
@@ -31,11 +60,16 @@
         background: #f1f1f1; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #888; 
+        background: #cbd5e1; 
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #555; 
+        background: #94a3b8; 
+      }
+      
+      .glass-nav {
+        background: rgba(43, 45, 66, 0.95);
+        backdrop-filter: blur(10px);
       }
     </style>
   <script type="importmap">
@@ -45,13 +79,13 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/",
     "react-router-dom": "https://esm.sh/react-router-dom@^7.10.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "vite": "https://esm.sh/vite@^7.3.0"
+    "vite": "https://esm.sh/vite@^7.3.0",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
 </head>
-  <body>
+  <body class="bg-gray-50 text-gray-900 antialiased selection:bg-brand-red selection:text-white">
     <div id="root"></div>
     <script type="module" src="./index.tsx"></script>
   </body>
