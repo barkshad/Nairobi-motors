@@ -51,9 +51,9 @@ export const Header: React.FC = () => {
               <motion.i 
                 whileHover={{ rotate: 180 }}
                 transition={{ type: "spring", stiffness: 200 }}
-                className="fas fa-circle-notch text-brand-red"
+                className="fas fa-cogs text-brand-red"
               ></motion.i>
-              <span className="tracking-widest">Nairobi <span className="text-brand-red">Premium</span></span>
+              <span className="tracking-widest">Kiambu <span className="text-brand-red">Autospares</span></span>
             </Link>
           </div>
           <div className="hidden md:block">
@@ -144,9 +144,9 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-1">
-            <h3 className="text-2xl font-bold text-white mb-6 tracking-wide">NAIROBI <span className="text-brand-red">PREMIUM</span></h3>
+            <h3 className="text-2xl font-bold text-white mb-6 tracking-wide">KIAMBU <span className="text-brand-red">AUTOSPARES</span></h3>
             <p className="text-sm leading-relaxed mb-8 text-gray-400">
-              The premier destination for luxury and performance vehicles in Kenya. Elevating the car buying experience through transparency and class.
+              Your trusted partner for quality vehicles and genuine spares in Kiambu. Verified imports and locally used cars at competitive prices.
             </p>
             <div className="flex space-x-4">
               {['facebook-f', 'instagram', 'twitter', 'linkedin-in'].map((icon) => (
@@ -167,7 +167,7 @@ export const Footer: React.FC = () => {
             <ul className="space-y-4 text-sm">
               <li><Link to="/inventory" className="hover:text-brand-red transition-colors">Browse Inventory</Link></li>
               <li><Link to="/showroom" className="hover:text-brand-red transition-colors">Virtual Showroom</Link></li>
-              <li><Link to="/about" className="hover:text-brand-red transition-colors">Our Heritage</Link></li>
+              <li><Link to="/about" className="hover:text-brand-red transition-colors">Our Story</Link></li>
               <li><Link to="/contact" className="hover:text-brand-red transition-colors">Get in Touch</Link></li>
             </ul>
           </div>
@@ -211,7 +211,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
         <div className="border-t border-gray-800/50 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Nairobi Premium Motors.</p>
+          <p>&copy; {new Date().getFullYear()} Kiambu Autospares Showroom.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
               <Link to="/admin" className="hover:text-white transition-colors">Admin Panel</Link>
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
@@ -249,25 +249,6 @@ export const StickyMobileActions: React.FC = () => {
   );
 };
 
-const SaleBanner: React.FC = () => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 100 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 2, type: "spring", stiffness: 120 }}
-      className="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 w-auto z-40"
-    >
-      <div className="glass-panel bg-brand-dark/90 px-6 py-3 rounded-full shadow-premium text-center border-white/10 whitespace-nowrap">
-        <p className="font-medium text-white text-sm">
-          Website on sale. Call or WhatsApp{" "}
-          <a href="tel:+254746053175" className="font-bold underline hover:text-brand-red transition-colors">0746053175</a>
-        </p>
-      </div>
-    </motion.div>
-  );
-};
-
-
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { pathname } = useLocation();
 
@@ -283,7 +264,6 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       </main>
       <Footer />
       <StickyMobileActions />
-      <SaleBanner />
     </div>
   );
 };

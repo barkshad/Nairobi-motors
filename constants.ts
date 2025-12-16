@@ -1,12 +1,12 @@
 import { Car, CarCondition, CarStatus, FuelType, Transmission } from "./types";
 
 export const COMPANY_INFO = {
-  name: "Nairobi Premium Motors",
-  address: "Ngong Road, Near Prestige Plaza, Nairobi, Kenya",
-  phone: "+254 700 123 456",
-  whatsapp: "254700123456", // Format for API
-  email: "sales@nairobigeminitmotors.co.ke",
-  locationCoords: { lat: -1.2921, lng: 36.8219 }, // Approximate Nairobi coords
+  name: "Kiambu Autospares Showroom",
+  address: "Kiambu Road, Kiambu, Kenya",
+  phone: "+254 746 053 175",
+  whatsapp: "254746053175", 
+  email: "sales@kiambuautospares.co.ke",
+  locationCoords: { lat: -1.1717, lng: 36.8327 }, // Approximate Kiambu coords
   openingHours: "Mon - Sat: 8:00 AM - 6:00 PM",
 };
 
