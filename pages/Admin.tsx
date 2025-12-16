@@ -6,14 +6,21 @@ import { Car, CarCondition, CarStatus, FuelType, Transmission, Inquiry } from '.
 import { CAR_MAKES } from '../constants';
 import { formatPrice } from '../components/CarComponents';
 
-// --- Login Component (Firebase) ---
-const Login: React.FC = () => {
+// --- Login Component (Firebase + Simple Pass) ---
+const Login: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [pass, setPass] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Simple password bypass for "12345"
+    if (pass === '12345') {
+      onLogin();
+      return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, pass);
     } catch (err: any) {
@@ -27,7 +34,7 @@ const Login: React.FC = () => {
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Admin Login</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label className="block text-sm font-medium text-gray-700">Email (Optional)</label>
             <input 
               type="email" 
               className="mt-1 w-full border border-gray-300 rounded p-2"
@@ -43,6 +50,7 @@ const Login: React.FC = () => {
               className="mt-1 w-full border border-gray-300 rounded p-2"
               value={pass}
               onChange={(e) => setPass(e.target.value)}
+              placeholder="Enter password"
             />
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
@@ -54,7 +62,7 @@ const Login: React.FC = () => {
 };
 
 // --- Main Admin Dashboard ---
-const AdminDashboard: React.FC = () => {
+const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [view, setView] = useState<'cars' | 'inquiries' | 'add-car'>('cars');
   const [cars, setCars] = useState<Car[]>([]);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
@@ -151,7 +159,7 @@ const AdminDashboard: React.FC = () => {
           <button onClick={() => setView('cars')} className={`hover:text-gray-300 ${view === 'cars' ? 'text-brand-red font-bold' : ''}`}>Inventory</button>
           <button onClick={() => setView('inquiries')} className={`hover:text-gray-300 ${view === 'inquiries' ? 'text-brand-red font-bold' : ''}`}>Inquiries</button>
           <button onClick={() => { setEditingCar(null); setCarForm(initialFormState); setView('add-car'); }} className={`hover:text-gray-300 ${view === 'add-car' ? 'text-brand-red font-bold' : ''}`}>Add Car</button>
-          <button onClick={() => signOut(auth)} className="text-gray-400 hover:text-white ml-4 border-l pl-4 border-gray-600">Logout</button>
+          <button onClick={onLogout} className="text-gray-400 hover:text-white ml-4 border-l pl-4 border-gray-600">Logout</button>
         </div>
       </div>
 
@@ -351,6 +359,7 @@ const AdminDashboard: React.FC = () => {
 // --- Root Admin Component ---
 const Admin: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -361,12 +370,17 @@ const Admin: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  const handleLogout = () => {
+    signOut(auth);
+    setIsAuthenticated(false);
+  };
+
   if (loading) return <div className="h-screen flex items-center justify-center">Loading...</div>;
 
-  return user ? (
-    <AdminDashboard />
+  return (user || isAuthenticated) ? (
+    <AdminDashboard onLogout={handleLogout} />
   ) : (
-    <Login />
+    <Login onLogin={() => setIsAuthenticated(true)} />
   );
 };
 

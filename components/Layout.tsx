@@ -193,6 +193,7 @@ export const Footer: React.FC = () => {
         <div className="border-t border-gray-800/50 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} Nairobi Premium Motors.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
+              <Link to="/admin" className="hover:text-white transition-colors">Admin Panel</Link>
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
           </div>
