@@ -35,6 +35,7 @@ export interface Car {
   condition: CarCondition;
   status: CarStatus;
   images: string[];
+  videoUrl?: string; // New field for video
   description: string;
   color: string;
   engineSize: string; // e.g., "2500cc"

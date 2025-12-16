@@ -103,6 +103,21 @@ const CarDetails: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Video Section (If exists) */}
+                {car.videoUrl && (
+                    <div className="glass-card bg-white p-2 rounded-3xl shadow-xl">
+                        <div className="bg-slate-900 rounded-2xl overflow-hidden aspect-video relative">
+                             <video controls className="w-full h-full" poster={car.images[0]}>
+                                 <source src={car.videoUrl} type="video/mp4" />
+                                 Your browser does not support the video tag.
+                             </video>
+                             <div className="absolute top-4 right-4 bg-brand-red text-white text-xs font-bold px-3 py-1 rounded-full pointer-events-none">
+                                 <i className="fas fa-video mr-1"></i> Walkaround
+                             </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Specs Grid */}
                 <div className="glass-card bg-white/60 p-8 rounded-3xl">
                     <h2 className="text-xl font-bold mb-6 text-slate-900 flex items-center gap-2">

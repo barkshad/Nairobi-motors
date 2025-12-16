@@ -8,7 +8,6 @@ import {
   deleteDoc, 
   query, 
   orderBy, 
-  where,
   Timestamp
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
@@ -56,18 +55,28 @@ export const storeService = {
     }
   },
 
-  addCar: async (carData: Omit<Car, "id" | "createdAt" | "images">, imageFiles: File[]): Promise<void> => {
+  addCar: async (carData: Omit<Car, "id" | "createdAt" | "images" | "videoUrl">, imageFiles: File[], videoFile?: File): Promise<void> => {
     // 1. Upload Images to Cloudinary
     const imageUrls: string[] = [];
+    let videoUrl = "";
     
-    // Upload sequentially to maintain order, or Promise.all for speed
+    // Upload images
     for (const file of imageFiles) {
       try {
         const result = await uploadToCloudinary(file);
         imageUrls.push(result.secure_url);
       } catch (err) {
         console.error("Failed to upload image", file.name, err);
-        // Continue or throw? Let's continue best effort
+      }
+    }
+
+    // Upload Video if exists
+    if (videoFile) {
+      try {
+        const result = await uploadToCloudinary(videoFile);
+        videoUrl = result.secure_url;
+      } catch (err) {
+        console.error("Failed to upload video", videoFile.name, err);
       }
     }
 
@@ -75,20 +84,30 @@ export const storeService = {
     await addDoc(collection(db, CARS_COLLECTION), {
       ...carData,
       images: imageUrls,
-      createdAt: Timestamp.now(), // Use Server Timestamp
+      videoUrl: videoUrl || null,
+      createdAt: Timestamp.now(), 
     });
   },
 
-  updateCar: async (id: string, updates: Partial<Car>, newImages?: File[]): Promise<void> => {
+  updateCar: async (id: string, updates: Partial<Car>, newImages?: File[], newVideo?: File): Promise<void> => {
     const docRef = doc(db, CARS_COLLECTION, id);
     let finalUpdates = { ...updates };
 
-    // If new images provided, upload and append (or replace logic depending on requirement)
-    // For simplicity: Append new images to existing list
+    // If new images provided, upload and append
     if (newImages && newImages.length > 0) {
        const uploadedUrls = await Promise.all(newImages.map(f => uploadToCloudinary(f).then(res => res.secure_url)));
        const currentImages = updates.images || [];
        finalUpdates.images = [...currentImages, ...uploadedUrls];
+    }
+
+    // If new video provided, upload and replace
+    if (newVideo) {
+      try {
+        const result = await uploadToCloudinary(newVideo);
+        finalUpdates.videoUrl = result.secure_url;
+      } catch (err) {
+         console.error("Failed to upload new video", err);
+      }
     }
 
     await updateDoc(docRef, finalUpdates);
@@ -102,7 +121,7 @@ export const storeService = {
   addInquiry: async (inquiry: Omit<Inquiry, "id" | "date">): Promise<void> => {
     await addDoc(collection(db, INQUIRIES_COLLECTION), {
       ...inquiry,
-      date: new Date().toISOString(), // Store string as per type, or use Timestamp
+      date: new Date().toISOString(),
       createdAt: Timestamp.now()
     });
   },
