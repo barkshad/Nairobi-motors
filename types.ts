@@ -35,10 +35,10 @@ export interface Car {
   condition: CarCondition;
   status: CarStatus;
   images: string[];
-  videoUrl?: string; // New field for video
+  videoUrl?: string; 
   description: string;
   color: string;
-  engineSize: string; // e.g., "2500cc"
+  engineSize: string; 
   features: string[];
   isFeatured: boolean;
   createdAt: number;
@@ -46,7 +46,7 @@ export interface Car {
 
 export interface Inquiry {
   id: string;
-  carId?: string; // Optional, general inquiry if null
+  carId?: string; 
   carName?: string;
   name: string;
   phone: string;
@@ -59,4 +59,46 @@ export interface FilterState {
   maxPrice: number;
   make: string;
   condition: string;
+}
+
+// --- CMS Content Types ---
+
+export interface HomeContent {
+  heroTitle: string;
+  heroSubtitle: string;
+  heroButtonText: string;
+  whyChooseUsTitle: string;
+  whyChooseUsText: string;
+}
+
+export interface AboutContent {
+  title: string;
+  subtitle: string;
+  story: string;
+  mission: string;
+  valuesIntegrity: string;
+  valuesQuality: string;
+  valuesCustomer: string;
+}
+
+export interface ShowroomContent {
+  title: string;
+  description: string;
+  experienceTitle: string;
+  experienceText: string;
+}
+
+export interface ContactContent {
+  phone: string;
+  whatsapp: string;
+  email: string;
+  address: string;
+  openingHours: string;
+}
+
+export interface SiteContent {
+  home: HomeContent;
+  about: AboutContent;
+  showroom: ShowroomContent;
+  contact: ContactContent;
 }

@@ -2,21 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform, Variants } from 'framer-motion';
 import { storeService } from '../services/store';
-import { Car } from '../types';
+import { Car, HomeContent } from '../types';
 import { CarCard } from '../components/CarComponents';
 
 const Home: React.FC = () => {
   const [featuredCars, setFeaturedCars] = useState<Car[]>([]);
+  const [content, setContent] = useState<HomeContent | null>(null);
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const opacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   useEffect(() => {
-    const fetchCars = async () => {
+    const fetchData = async () => {
       const allCars = await storeService.getCars();
       setFeaturedCars(allCars.filter(c => c.isFeatured).slice(0, 3));
+      
+      const siteContent = await storeService.getSiteContent();
+      setContent(siteContent.home);
     };
-    fetchCars();
+    fetchData();
   }, []);
 
   const containerVariants: Variants = {
@@ -37,6 +41,8 @@ const Home: React.FC = () => {
       transition: { type: "spring", stiffness: 100 }
     }
   };
+
+  if(!content) return <div className="h-screen w-full bg-slate-900"></div>;
 
   return (
     <div className="flex flex-col w-full overflow-hidden">
@@ -70,20 +76,19 @@ const Home: React.FC = () => {
                     Premium Dealership
                 </motion.div>
                 
-                <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-[1.1] mb-8 tracking-tight">
-                    Drive the <br/>
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-red via-red-400 to-white">Exceptional.</span>
+                <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-[1.1] mb-8 tracking-tight whitespace-pre-line">
+                   {content.heroTitle}
                 </motion.h1>
                 
                 <motion.p variants={itemVariants} className="text-lg md:text-xl text-gray-300 font-light leading-relaxed max-w-xl mb-10 border-l-2 border-brand-red pl-6">
-                    Curating Kenya's finest selection of foreign used and locally maintained vehicles. Verified quality, transparent pricing, and unmatched service.
+                    {content.heroSubtitle}
                 </motion.p>
                 
                 <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
                     <Link to="/inventory" className="group relative px-8 py-4 bg-brand-red text-white font-bold rounded-xl overflow-hidden shadow-lg shadow-red-900/30">
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
                         <span className="relative flex items-center gap-3">
-                            View Inventory <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                            {content.heroButtonText} <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                         </span>
                     </Link>
                     <Link to="/showroom" className="group px-8 py-4 bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-colors">
@@ -165,7 +170,7 @@ const Home: React.FC = () => {
                     transition={{ delay: 0.1 }}
                     className="text-4xl md:text-5xl font-extrabold text-white mt-4 mb-6"
                 >
-                    The Premium Standard
+                    {content.whyChooseUsTitle}
                 </motion.h2>
                 <motion.p 
                     initial={{ opacity: 0 }}
@@ -173,7 +178,7 @@ const Home: React.FC = () => {
                     transition={{ delay: 0.2 }}
                     className="text-gray-400 text-lg"
                 >
-                    We don't just sell cars; we sell confidence. Experience the difference of a dealership built on integrity and quality.
+                    {content.whyChooseUsText}
                 </motion.p>
             </div>
 
