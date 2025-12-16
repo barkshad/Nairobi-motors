@@ -4,7 +4,7 @@ import { auth } from '../lib/firebase';
 import { storeService } from '../services/store';
 import { uploadToCloudinary } from '../services/cloudinary';
 import { Car, CarCondition, CarStatus, FuelType, Transmission, Inquiry, SiteContent } from '../types';
-import { CAR_MAKES } from '../constants';
+import { CAR_MAKES, INITIAL_CARS } from '../constants';
 import { formatPrice } from '../components/CarComponents';
 
 // --- Login Component ---
@@ -199,6 +199,20 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       setIsSubmitting(false);
     }
   };
+
+  // Seed Data
+  const handleSeedData = async () => {
+    if(window.confirm(`This will add ${INITIAL_CARS.length} demo cars from local storage to the live database without replacing existing ones. Continue?`)) {
+        try {
+            await storeService.seedCars(INITIAL_CARS);
+            alert("Local cars pushed to database successfully!");
+            refreshData();
+        } catch (e) {
+            console.error(e);
+            alert("Failed to push local cars.");
+        }
+    }
+  }
 
   // Content Actions
   const handleSaveContent = async () => {
@@ -412,7 +426,12 @@ const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h3 className="font-bold text-lg text-slate-800">Vehicle Inventory</h3>
-                <div className="text-sm text-gray-500">Sorted by: <span className="font-medium text-slate-900">Newest First</span></div>
+                <div className="flex items-center gap-4">
+                    <button onClick={handleSeedData} className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-bold transition-colors">
+                        <i className="fas fa-database mr-2"></i> Seed Local Data
+                    </button>
+                    <div className="text-sm text-gray-500">Sorted by: <span className="font-medium text-slate-900">Newest First</span></div>
+                </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">

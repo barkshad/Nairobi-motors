@@ -89,6 +89,19 @@ export const storeService = {
     });
   },
 
+  // Method to bulk add cars from local storage/constants
+  seedCars: async (cars: Car[]): Promise<void> => {
+      const batchPromises = cars.map(car => {
+          // Destructure to remove ID (let firebase generate) and ensure createdAt is Timestamp
+          const { id, ...carData } = car;
+          return addDoc(collection(db, CARS_COLLECTION), {
+              ...carData,
+              createdAt: Timestamp.now()
+          });
+      });
+      await Promise.all(batchPromises);
+  },
+
   updateCar: async (id: string, updates: Partial<Car>, newImages?: File[], newVideo?: File): Promise<void> => {
     const docRef = doc(db, CARS_COLLECTION, id);
     let finalUpdates = { ...updates };
