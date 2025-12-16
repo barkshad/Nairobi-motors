@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { COMPANY_INFO } from '../constants';
 
 export const Header: React.FC = () => {
@@ -24,28 +25,45 @@ export const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'glass-nav shadow-md py-2' : 'bg-brand-dark py-4'}`}>
+    <motion.nav 
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 100, damping: 20 }}
+      className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'glass-dark shadow-xl py-3' : 'bg-transparent py-6'}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-12">
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-bold tracking-tight text-white uppercase flex items-center gap-2">
-              <i className="fas fa-car-side text-brand-red"></i>
-              <span>Nairobi <span className="text-brand-red font-extrabold">Premium</span></span>
+            <Link to="/" className="text-2xl font-extrabold tracking-tighter text-white uppercase flex items-center gap-2 group">
+              <motion.i 
+                whileHover={{ rotate: 180 }}
+                transition={{ type: "spring", stiffness: 200 }}
+                className="fas fa-circle-notch text-brand-red"
+              ></motion.i>
+              <span className="tracking-widest">Nairobi <span className="text-brand-red">Premium</span></span>
             </Link>
           </div>
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-1">
+            <div className="ml-10 flex items-baseline space-x-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    isActive(link.path)
-                      ? 'bg-brand-red text-white shadow-lg'
-                      : 'text-gray-300 hover:text-white hover:bg-white/10'
-                  }`}
+                  className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors group"
                 >
-                  {link.name}
+                  <span className={`relative z-10 ${isActive(link.path) || (!scrolled && location.pathname === '/') ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                    {link.name}
+                  </span>
+                  {isActive(link.path) && (
+                    <motion.div 
+                      layoutId="nav-pill"
+                      className="absolute inset-0 bg-brand-red rounded-full shadow-lg shadow-red-900/40"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  {!isActive(link.path) && (
+                     <div className="absolute inset-0 bg-white/10 rounded-full scale-0 group-hover:scale-100 transition-transform duration-200"></div>
+                  )}
                 </Link>
               ))}
             </div>
@@ -53,101 +71,131 @@ export const Header: React.FC = () => {
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
             >
-              <span className="sr-only">Open main menu</span>
               <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-xl`}></i>
             </button>
           </div>
         </div>
       </div>
 
-      {isOpen && (
-        <div className="md:hidden bg-brand-dark border-t border-gray-700 animate-fade-in">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-3 rounded-md text-base font-medium ${
-                  isActive(link.path)
-                    ? 'bg-brand-red text-white'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </nav>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="md:hidden glass-dark border-t border-gray-800 overflow-hidden"
+          >
+            <div className="px-4 pt-4 pb-6 space-y-2">
+              {navLinks.map((link, i) => (
+                <motion.div
+                  key={link.name}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                    <Link
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`block px-4 py-3 rounded-xl text-base font-medium ${
+                        isActive(link.path)
+                        ? 'bg-brand-red text-white shadow-lg shadow-red-900/20'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    }`}
+                    >
+                    {link.name}
+                    </Link>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.nav>
   );
 };
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-900 text-gray-400 border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <footer className="bg-brand-dark text-gray-400 border-t border-gray-800 relative overflow-hidden">
+      {/* Abstract Background Element */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-red rounded-full blur-[100px]"></div>
+          <div className="absolute top-40 left-20 w-72 h-72 bg-blue-600 rounded-full blur-[100px]"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-1">
-            <h3 className="text-xl font-bold text-white mb-6 tracking-wide">NAIROBI <span className="text-brand-red">PREMIUM</span></h3>
-            <p className="text-sm leading-relaxed mb-6">
-              Your trusted partner for quality vehicles in Kenya. We specialize in clean, reliable, and premium locally used and foreign used cars.
+            <h3 className="text-2xl font-bold text-white mb-6 tracking-wide">NAIROBI <span className="text-brand-red">PREMIUM</span></h3>
+            <p className="text-sm leading-relaxed mb-8 text-gray-400">
+              The premier destination for luxury and performance vehicles in Kenya. Elevating the car buying experience through transparency and class.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-brand-red hover:text-white transition-all duration-300"><i className="fab fa-facebook-f"></i></a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-brand-red hover:text-white transition-all duration-300"><i className="fab fa-instagram"></i></a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-brand-red hover:text-white transition-all duration-300"><i className="fab fa-twitter"></i></a>
+              {['facebook-f', 'instagram', 'twitter', 'linkedin-in'].map((icon) => (
+                  <a key={icon} href="#" className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-brand-red hover:text-white hover:border-brand-red transition-all duration-300">
+                      <i className={`fab fa-${icon}`}></i>
+                  </a>
+              ))}
             </div>
           </div>
+          
+          {/* Quick Links Column */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-6">Quick Links</h3>
-            <ul className="space-y-3 text-sm">
-              <li><Link to="/inventory" className="hover:text-brand-red transition-colors flex items-center"><i className="fas fa-chevron-right text-xs mr-2"></i> Browse Inventory</Link></li>
-              <li><Link to="/showroom" className="hover:text-brand-red transition-colors flex items-center"><i className="fas fa-chevron-right text-xs mr-2"></i> Visit Showroom</Link></li>
-              <li><Link to="/contact" className="hover:text-brand-red transition-colors flex items-center"><i className="fas fa-chevron-right text-xs mr-2"></i> Contact Us</Link></li>
-              <li><Link to="/about" className="hover:text-brand-red transition-colors flex items-center"><i className="fas fa-chevron-right text-xs mr-2"></i> About Us</Link></li>
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Explore</h3>
+            <ul className="space-y-4 text-sm">
+              <li><Link to="/inventory" className="hover:text-brand-red transition-colors">Browse Inventory</Link></li>
+              <li><Link to="/showroom" className="hover:text-brand-red transition-colors">Virtual Showroom</Link></li>
+              <li><Link to="/about" className="hover:text-brand-red transition-colors">Our Heritage</Link></li>
+              <li><Link to="/contact" className="hover:text-brand-red transition-colors">Get in Touch</Link></li>
             </ul>
           </div>
+
+          {/* Contact Column */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-6">Contact Info</h3>
-            <ul className="space-y-4 text-sm">
-              <li className="flex items-start group">
-                <i className="fas fa-map-marker-alt mt-1 mr-3 text-brand-red group-hover:text-white transition-colors"></i>
-                <span>{COMPANY_INFO.address}</span>
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Visit Us</h3>
+            <ul className="space-y-6 text-sm">
+              <li className="flex items-start">
+                <i className="fas fa-map-marker-alt mt-1 mr-4 text-brand-red"></i>
+                <span className="text-gray-400">{COMPANY_INFO.address}</span>
               </li>
-              <li className="flex items-center group">
-                <i className="fas fa-phone mr-3 text-brand-red group-hover:text-white transition-colors"></i>
-                <span>{COMPANY_INFO.phone}</span>
+              <li className="flex items-center">
+                <i className="fas fa-phone-alt mr-4 text-brand-red"></i>
+                <span className="text-white font-medium">{COMPANY_INFO.phone}</span>
               </li>
-              <li className="flex items-center group">
-                <i className="fas fa-envelope mr-3 text-brand-red group-hover:text-white transition-colors"></i>
+              <li className="flex items-center">
+                <i className="fas fa-envelope mr-4 text-brand-red"></i>
                 <span>{COMPANY_INFO.email}</span>
               </li>
             </ul>
           </div>
+
+          {/* Hours Column */}
           <div>
-            <h3 className="text-lg font-bold text-white mb-6">Business Hours</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex justify-between">
-                <span>Mon - Fri:</span>
+             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Hours</h3>
+            <ul className="space-y-3 text-sm">
+              <li className="flex justify-between border-b border-gray-800 pb-2">
+                <span>Mon - Fri</span>
                 <span className="text-white">8:00 AM - 6:00 PM</span>
               </li>
-              <li className="flex justify-between">
-                <span>Saturday:</span>
+              <li className="flex justify-between border-b border-gray-800 pb-2">
+                <span>Saturday</span>
                 <span className="text-white">9:00 AM - 4:00 PM</span>
               </li>
-              <li className="flex justify-between">
-                <span>Sunday:</span>
+              <li className="flex justify-between pt-2">
+                <span>Sunday</span>
                 <span className="text-brand-red">Closed</span>
               </li>
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Nairobi Premium Motors. All rights reserved.</p>
+        <div className="border-t border-gray-800/50 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+          <p>&copy; {new Date().getFullYear()} Nairobi Premium Motors.</p>
+          <div className="flex gap-6 mt-4 md:mt-0">
+              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+          </div>
         </div>
       </div>
     </footer>
@@ -156,30 +204,42 @@ export const Footer: React.FC = () => {
 
 export const StickyMobileActions: React.FC = () => {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/95 backdrop-blur-sm border-t border-gray-200 flex shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] pb-safe">
+    <motion.div 
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ delay: 1 }}
+        className="fixed bottom-4 left-4 right-4 z-50 md:hidden flex gap-3"
+    >
       <a
         href={`tel:${COMPANY_INFO.phone}`}
-        className="flex-1 flex flex-col items-center justify-center py-3 text-gray-800 active:bg-gray-100 transition-colors border-r border-gray-100"
+        className="flex-1 glass-panel bg-white/90 backdrop-blur-xl text-brand-dark rounded-2xl py-4 flex items-center justify-center shadow-premium"
       >
-        <i className="fas fa-phone-alt text-xl mb-1 text-brand-dark"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">Call</span>
+        <i className="fas fa-phone-alt mr-2 text-lg"></i>
+        <span className="font-bold text-sm">Call</span>
       </a>
       <a
         href={`https://wa.me/${COMPANY_INFO.whatsapp}`}
-        className="flex-1 flex flex-col items-center justify-center py-3 bg-brand-red text-white active:bg-brand-redHover transition-colors"
+        className="flex-1 bg-brand-red/90 backdrop-blur-xl text-white rounded-2xl py-4 flex items-center justify-center shadow-lg shadow-red-600/30"
       >
-        <i className="fab fa-whatsapp text-2xl mb-1"></i>
-        <span className="text-xs font-bold uppercase tracking-wider">WhatsApp</span>
+        <i className="fab fa-whatsapp mr-2 text-xl"></i>
+        <span className="font-bold text-sm">WhatsApp</span>
       </a>
-    </div>
+    </motion.div>
   );
 };
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-gray-50">
+    <div className="flex flex-col min-h-screen font-sans bg-slate-50 selection:bg-brand-red selection:text-white">
       <Header />
-      <main className="flex-grow pt-20 md:pt-24 pb-16 md:pb-0"> 
+      {/* Added AnimatePresence wrapper handled in page components for exit animations if needed */}
+      <main className="flex-grow pt-0 min-h-screen"> 
         {children}
       </main>
       <Footer />
