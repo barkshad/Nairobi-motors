@@ -12,109 +12,125 @@ export const formatPrice = (price: number) => {
 };
 
 const cardVariants: Variants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  hidden: { opacity: 0, y: 50 },
   visible: { 
     opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 20, mass: 1 }
+    y: 0,
+    transition: { type: "spring", stiffness: 80, damping: 20 }
   },
-  exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } }
+  hover: {
+    y: -10,
+    transition: { type: "spring", stiffness: 300, damping: 15 }
+  }
 };
 
 export const CarCard: React.FC<{ car: Car }> = ({ car }) => {
   return (
     <motion.div 
-      layout
       variants={cardVariants}
       initial="hidden"
-      animate="visible"
-      exit="exit"
-      className="group relative h-full flex flex-col"
+      whileInView="visible"
+      whileHover="hover"
+      viewport={{ once: true, margin: "-50px" }}
+      className="group relative h-full"
     >
-      {/* Glass Card Container */}
-      <motion.div 
-        whileHover={{ y: -12, scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="glass-card rounded-2xl overflow-hidden h-full flex flex-col bg-white/60 hover:bg-white/80 transition-colors duration-300 hover:shadow-premium-hover border border-white/40"
-      >
-        
-        {/* Image Section */}
-        <Link to={`/cars/${car.id}`} className="block relative h-64 overflow-hidden">
-            {/* Status Badges */}
-            {car.status === CarStatus.Sold && (
-              <div className="absolute top-4 right-4 bg-red-600/90 backdrop-blur-md text-white px-4 py-1 z-20 font-bold text-xs uppercase tracking-widest shadow-lg rounded-lg border border-red-500/50">
-                SOLD
-              </div>
-            )}
-            {car.status === CarStatus.Reserved && (
-              <div className="absolute top-4 right-4 bg-amber-500/90 backdrop-blur-md text-white px-4 py-1 z-20 font-bold text-xs uppercase tracking-widest shadow-lg rounded-lg border border-amber-400/50">
-                Reserved
-              </div>
-            )}
+      <Link to={`/cars/${car.id}`} className="block h-full">
+        <div className="relative h-full bg-white rounded-[2rem] overflow-hidden shadow-lg border border-gray-100 transition-shadow duration-300 group-hover:shadow-2xl group-hover:shadow-brand-red/10 flex flex-col">
             
-            {/* Image Zoom Effect */}
-            <motion.div 
-                className="w-full h-full"
-                whileHover={{ scale: 1.1 }}
-                transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            >
-                <img
-                    src={car.images[0]}
-                    alt={`${car.make} ${car.model}`}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                />
-            </motion.div>
-            
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-80" />
-            
-            {/* Overlay Content */}
-            <div className="absolute bottom-4 left-4 right-4 z-10">
-                <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/20 uppercase tracking-wide">
-                    {car.condition}
-                </span>
-                <h3 className="text-white text-xl font-bold mt-2 text-shadow-sm truncate">{car.make} {car.model}</h3>
+            {/* Shimmer Effect Overlay */}
+            <div className="absolute inset-0 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none overflow-hidden rounded-[2rem]">
+                <div className="absolute top-0 left-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
             </div>
-        </Link>
 
-        {/* Content Section */}
-        <div className="p-5 flex flex-col flex-grow relative">
-           <div className="flex justify-between items-baseline mb-4 border-b border-gray-200/50 pb-4">
-                <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">{car.year}</p>
-                <span className="text-brand-red text-xl font-extrabold">{formatPrice(car.price)}</span>
-           </div>
+            {/* Image Container */}
+            <div className="relative h-72 overflow-hidden">
+                {/* Badges */}
+                <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                    <span className="bg-white/95 backdrop-blur-md text-slate-900 text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md">
+                        {car.condition}
+                    </span>
+                    {car.isFeatured && (
+                         <span className="bg-brand-dark/95 backdrop-blur-md text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full uppercase tracking-widest shadow-md border border-white/10">
+                            Featured
+                        </span>
+                    )}
+                </div>
 
-           <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 mb-6">
-                <div className="flex items-center gap-2 bg-slate-50/50 p-2 rounded-lg border border-gray-100">
-                    <i className="fas fa-tachometer-alt text-gray-400"></i>
-                    <span className="font-medium truncate">{car.mileage.toLocaleString()} km</span>
+                <div className="absolute top-4 right-4 z-20">
+                     {car.status !== CarStatus.Available && (
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-lg ${
+                            car.status === CarStatus.Sold ? 'bg-red-600' : 'bg-amber-500'
+                        }`}>
+                            {car.status}
+                        </span>
+                    )}
                 </div>
-                <div className="flex items-center gap-2 bg-slate-50/50 p-2 rounded-lg border border-gray-100">
-                    <i className="fas fa-gas-pump text-gray-400"></i>
-                    <span className="font-medium truncate">{car.fuelType}</span>
-                </div>
-                 <div className="flex items-center gap-2 bg-slate-50/50 p-2 rounded-lg border border-gray-100">
-                    <i className="fas fa-cogs text-gray-400"></i>
-                    <span className="font-medium truncate">{car.transmission}</span>
-                </div>
-                 <div className="flex items-center gap-2 bg-slate-50/50 p-2 rounded-lg border border-gray-100">
-                    <i className="fas fa-cube text-gray-400"></i>
-                    <span className="font-medium truncate">{car.engineSize}</span>
-                </div>
-           </div>
+                
+                {/* Main Image with Ken Burns Effect */}
+                <motion.div 
+                    className="w-full h-full"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                >
+                    <img
+                        src={car.images[0]}
+                        alt={`${car.make} ${car.model}`}
+                        loading="lazy"
+                        className="w-full h-full object-cover"
+                    />
+                </motion.div>
+                
+                {/* Gradient Overlay */}
+                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-900/80 to-transparent opacity-60" />
+            </div>
 
-           <div className="mt-auto pt-2">
-               <Link 
-                to={`/cars/${car.id}`}
-                className="block w-full text-center py-3 rounded-xl bg-brand-dark text-white font-bold text-sm shadow-lg shadow-slate-900/10 hover:shadow-xl hover:shadow-slate-900/20 hover:bg-slate-800 transition-all active:scale-[0.98]"
-               >
-                   View Details
-               </Link>
-           </div>
+            {/* Content Body */}
+            <div className="p-6 flex flex-col flex-grow bg-white relative">
+                {/* Floating Price Tag Effect */}
+                <div className="absolute -top-6 right-6 bg-brand-red text-white px-4 py-2 rounded-xl shadow-lg shadow-red-600/30 transform group-hover:scale-110 transition-transform duration-300 z-20">
+                    <span className="font-bold text-sm tracking-tight">{formatPrice(car.price)}</span>
+                </div>
+
+                <div className="mb-4">
+                    <h3 className="text-xl font-extrabold text-slate-900 tracking-tight group-hover:text-brand-red transition-colors">
+                        {car.make} {car.model}
+                    </h3>
+                    <p className="text-sm font-medium text-slate-400 mt-1">{car.year} • {car.color}</p>
+                </div>
+
+                {/* Specs Grid - Minimalist */}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <i className="fas fa-tachometer-alt text-brand-red/70"></i>
+                        <span className="truncate">{car.mileage.toLocaleString()} km</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <i className="fas fa-gas-pump text-brand-red/70"></i>
+                        <span className="truncate">{car.fuelType}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <i className="fas fa-cogs text-brand-red/70"></i>
+                        <span className="truncate">{car.transmission}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                        <i className="fas fa-cube text-brand-red/70"></i>
+                        <span className="truncate">{car.engineSize}</span>
+                    </div>
+                </div>
+
+                {/* CTA */}
+                <div className="mt-auto border-t border-gray-100 pt-4 flex items-center justify-between text-sm">
+                    <span className="font-bold text-slate-900 group-hover:underline decoration-brand-red underline-offset-4 decoration-2">View Details</span>
+                    <motion.div 
+                        className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg"
+                        whileHover={{ x: 5, backgroundColor: "#D90429" }}
+                    >
+                        <i className="fas fa-arrow-right text-xs"></i>
+                    </motion.div>
+                </div>
+            </div>
         </div>
-      </motion.div>
+      </Link>
     </motion.div>
   );
 };

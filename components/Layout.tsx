@@ -6,10 +6,10 @@ import { COMPANY_INFO } from '../constants';
 // --- Page Transition Wrapper ---
 export const PageTransition: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+    initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-    exit={{ opacity: 0, y: -20, filter: 'blur(10px)' }}
-    transition={{ type: "spring", stiffness: 100, damping: 20, mass: 1 }}
+    exit={{ opacity: 0, y: -10, filter: 'blur(5px)' }}
+    transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} // Cubic bezier for luxury feel
     className="w-full"
   >
     {children}
@@ -22,7 +22,7 @@ export const Header: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -39,57 +39,61 @@ export const Header: React.FC = () => {
 
   return (
     <motion.nav 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 100, damping: 20 }}
-      className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'glass-dark shadow-xl py-3' : 'bg-transparent py-6'}`}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 80, damping: 20, delay: 0.5 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? 'py-4' : 'py-8'}`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-12">
+      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-500`}>
+        <div className={`
+            flex items-center justify-between h-16 px-8 rounded-full transition-all duration-500
+            ${scrolled ? 'glass-dark shadow-neon bg-slate-900/90 border border-white/10 backdrop-blur-xl' : 'bg-transparent'}
+        `}>
           <div className="flex items-center">
-            <Link to="/" className="text-2xl font-extrabold tracking-tighter text-white uppercase flex items-center gap-2 group">
-              <motion.i 
-                whileHover={{ rotate: 180 }}
-                transition={{ type: "spring", stiffness: 200 }}
-                className="fas fa-cogs text-brand-red"
-              ></motion.i>
-              <span className="tracking-widest">Kiambu <span className="text-brand-red">Autospares</span></span>
+            <Link to="/" className="text-xl font-extrabold tracking-tighter text-white uppercase flex items-center gap-3 group">
+              <motion.span 
+                whileHover={{ rotate: 90 }}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors shadow-lg ${scrolled ? 'bg-brand-red' : 'bg-white text-slate-900'}`}
+              >
+                  <i className="fas fa-gem"></i>
+              </motion.span>
+              <span className="tracking-[0.15em] hidden sm:block text-sm">Kiambu <span className={scrolled ? 'text-white' : 'text-brand-red'}>Auto</span></span>
             </Link>
           </div>
+          
           <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-2">
+            <div className="flex items-baseline space-x-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors group"
+                  className="relative px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors group overflow-hidden"
                 >
-                  <span className={`relative z-10 transition-colors duration-300 ${isActive(link.path) || (!scrolled && location.pathname === '/') ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                  <span className={`relative z-10 transition-colors duration-300 ${isActive(link.path) ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
                     {link.name}
                   </span>
                   {isActive(link.path) && (
                     <motion.div 
-                      layoutId="nav-pill"
-                      className="absolute inset-0 bg-brand-red/80 backdrop-blur-sm rounded-full shadow-lg shadow-red-900/40"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      layoutId="nav-bg"
+                      className="absolute inset-0 bg-brand-red rounded-full shadow-glow"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                     />
                   )}
+                  {/* Hover background for non-active links */}
                   {!isActive(link.path) && (
-                     <div className="absolute inset-0 bg-white/5 rounded-full scale-0 group-hover:scale-100 transition-transform duration-200 ease-out origin-center"></div>
+                      <div className="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-full"></div>
                   )}
                 </Link>
               ))}
             </div>
           </div>
+          
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-full text-white hover:bg-white/10 focus:outline-none transition-colors"
             >
-              <motion.i 
-                animate={{ rotate: isOpen ? 180 : 0 }}
-                className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-xl`}
-              ></motion.i>
+              <i className={`fas ${isOpen ? 'fa-times' : 'fa-bars'} text-lg`}></i>
             </button>
           </div>
         </div>
@@ -98,25 +102,25 @@ export const Header: React.FC = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass-dark border-t border-gray-800 overflow-hidden backdrop-blur-3xl"
+            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+            animate={{ opacity: 1, height: 'auto', scale: 1 }}
+            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+            className="md:hidden glass-dark border border-white/10 overflow-hidden backdrop-blur-3xl mx-4 mt-2 rounded-3xl shadow-2xl"
           >
-            <div className="px-4 pt-4 pb-6 space-y-2">
+            <div className="px-4 pt-6 pb-8 space-y-2">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.name}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.1, type: "spring" }}
+                  transition={{ delay: i * 0.05 }}
                 >
                     <Link
                     to={link.path}
                     onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-3 rounded-xl text-base font-medium ${
+                    className={`block px-6 py-4 rounded-2xl text-sm font-bold uppercase tracking-wider ${
                         isActive(link.path)
-                        ? 'bg-brand-red text-white shadow-lg shadow-red-900/20'
+                        ? 'bg-brand-red text-white shadow-glow'
                         : 'text-gray-300 hover:text-white hover:bg-white/5'
                     }`}
                     >
@@ -134,26 +138,36 @@ export const Header: React.FC = () => {
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-brand-dark text-gray-400 border-t border-gray-800 relative overflow-hidden">
-      {/* Abstract Background Element */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-96 h-96 bg-brand-red rounded-full blur-[100px]"></div>
-          <div className="absolute top-40 left-20 w-72 h-72 bg-blue-600 rounded-full blur-[100px]"></div>
+    <footer className="bg-slate-950 text-gray-400 border-t border-white/5 relative overflow-hidden">
+      {/* Massive CTA */}
+      <div className="border-b border-white/5 bg-slate-900/50">
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                >
+                    <h2 className="text-4xl md:text-7xl font-extrabold text-white mb-8 tracking-tighter">Ready to <span className="text-brand-red">Upgrade?</span></h2>
+                    <Link to="/inventory" className="inline-flex items-center gap-3 px-10 py-5 bg-white text-slate-950 rounded-full font-bold hover:scale-105 transition-transform shadow-premium uppercase tracking-wider text-sm">
+                        View Inventory <i className="fas fa-arrow-right"></i>
+                    </Link>
+                </motion.div>
+           </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-1 md:col-span-1">
-            <h3 className="text-2xl font-bold text-white mb-6 tracking-wide">KIAMBU <span className="text-brand-red">AUTOSPARES</span></h3>
-            <p className="text-sm leading-relaxed mb-8 text-gray-400">
-              Your trusted partner for quality vehicles and genuine spares in Kiambu. Verified imports and locally used cars at competitive prices.
+            <h3 className="text-2xl font-bold text-white mb-6 tracking-tight">KIAMBU <span className="text-brand-red">AUTOSPARES</span></h3>
+            <p className="text-sm leading-relaxed mb-8 text-gray-500 font-medium">
+              Premium vehicles. Transparent process. Kiambu's finest automotive showroom.
             </p>
             <div className="flex space-x-4">
               {['facebook-f', 'instagram', 'twitter', 'linkedin-in'].map((icon) => (
                   <motion.a 
-                    whileHover={{ scale: 1.1, backgroundColor: '#D90429', borderColor: '#D90429', color: '#fff' }}
+                    whileHover={{ y: -5, color: '#fff', backgroundColor: '#D90429', borderColor: '#D90429' }}
                     key={icon} href="#" 
-                    className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center transition-all duration-300"
+                    className="w-12 h-12 rounded-full bg-white/5 border border-white/5 flex items-center justify-center transition-all duration-300"
                   >
                       <i className={`fab fa-${icon}`}></i>
                   </motion.a>
@@ -161,47 +175,44 @@ export const Footer: React.FC = () => {
             </div>
           </div>
           
-          {/* Quick Links Column */}
           <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Explore</h3>
-            <ul className="space-y-4 text-sm">
-              <li><Link to="/inventory" className="hover:text-brand-red transition-colors">Browse Inventory</Link></li>
-              <li><Link to="/showroom" className="hover:text-brand-red transition-colors">Virtual Showroom</Link></li>
-              <li><Link to="/about" className="hover:text-brand-red transition-colors">Our Story</Link></li>
-              <li><Link to="/contact" className="hover:text-brand-red transition-colors">Get in Touch</Link></li>
+            <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] mb-8 opacity-50">Discovery</h3>
+            <ul className="space-y-4 text-sm font-medium">
+              <li><Link to="/inventory" className="hover:text-brand-red transition-colors block py-1">Inventory</Link></li>
+              <li><Link to="/showroom" className="hover:text-brand-red transition-colors block py-1">Virtual Tour</Link></li>
+              <li><Link to="/about" className="hover:text-brand-red transition-colors block py-1">Heritage</Link></li>
+              <li><Link to="/contact" className="hover:text-brand-red transition-colors block py-1">Contact</Link></li>
             </ul>
           </div>
 
-          {/* Contact Column */}
           <div>
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Visit Us</h3>
-            <ul className="space-y-6 text-sm">
+            <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] mb-8 opacity-50">Locate Us</h3>
+            <ul className="space-y-6 text-sm font-medium">
               <li className="flex items-start">
-                <i className="fas fa-map-marker-alt mt-1 mr-4 text-brand-red"></i>
+                <i className="fas fa-map-pin mt-1 mr-4 text-brand-red"></i>
                 <span className="text-gray-400">{COMPANY_INFO.address}</span>
               </li>
               <li className="flex items-center">
-                <i className="fas fa-phone-alt mr-4 text-brand-red"></i>
-                <span className="text-white font-medium">{COMPANY_INFO.phone}</span>
+                <i className="fas fa-phone mr-4 text-brand-red"></i>
+                <span className="text-white">{COMPANY_INFO.phone}</span>
               </li>
               <li className="flex items-center">
-                <i className="fas fa-envelope mr-4 text-brand-red"></i>
+                <i className="fas fa-at mr-4 text-brand-red"></i>
                 <span>{COMPANY_INFO.email}</span>
               </li>
             </ul>
           </div>
 
-          {/* Hours Column */}
           <div>
-             <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-6">Hours</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex justify-between border-b border-gray-800 pb-2">
-                <span>Mon - Fri</span>
-                <span className="text-white">8:00 AM - 6:00 PM</span>
+             <h3 className="text-xs font-bold text-white uppercase tracking-[0.2em] mb-8 opacity-50">Trading Hours</h3>
+            <ul className="space-y-3 text-sm font-medium">
+              <li className="flex justify-between border-b border-white/5 pb-2">
+                <span>Weekdays</span>
+                <span className="text-white">8am - 6pm</span>
               </li>
-              <li className="flex justify-between border-b border-gray-800 pb-2">
+              <li className="flex justify-between border-b border-white/5 pb-2">
                 <span>Saturday</span>
-                <span className="text-white">9:00 AM - 4:00 PM</span>
+                <span className="text-white">9am - 4pm</span>
               </li>
               <li className="flex justify-between pt-2">
                 <span>Sunday</span>
@@ -210,12 +221,12 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
         </div>
-        <div className="border-t border-gray-800/50 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+        <div className="border-t border-white/5 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-600 font-bold uppercase tracking-wider">
           <p>&copy; {new Date().getFullYear()} Kiambu Autospares Showroom.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
-              <Link to="/admin" className="hover:text-white transition-colors">Admin Panel</Link>
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
+              <Link to="/admin" className="hover:text-white transition-colors">Admin</Link>
+              <a href="#" className="hover:text-white transition-colors">Privacy</a>
+              <a href="#" className="hover:text-white transition-colors">Terms</a>
           </div>
         </div>
       </div>
@@ -233,14 +244,14 @@ export const StickyMobileActions: React.FC = () => {
     >
       <a
         href={`tel:${COMPANY_INFO.phone}`}
-        className="flex-1 glass-panel bg-white/90 backdrop-blur-xl text-brand-dark rounded-2xl py-4 flex items-center justify-center shadow-premium active:scale-95 transition-transform"
+        className="flex-1 glass-dark text-white rounded-2xl py-4 flex items-center justify-center shadow-2xl active:scale-95 transition-transform"
       >
         <i className="fas fa-phone-alt mr-2 text-lg"></i>
         <span className="font-bold text-sm">Call</span>
       </a>
       <a
         href={`https://wa.me/${COMPANY_INFO.whatsapp}`}
-        className="flex-1 bg-brand-red/90 backdrop-blur-xl text-white rounded-2xl py-4 flex items-center justify-center shadow-lg shadow-red-600/30 active:scale-95 transition-transform"
+        className="flex-1 bg-brand-red text-white rounded-2xl py-4 flex items-center justify-center shadow-lg shadow-red-900/40 active:scale-95 transition-transform"
       >
         <i className="fab fa-whatsapp mr-2 text-xl"></i>
         <span className="font-bold text-sm">WhatsApp</span>
