@@ -61,16 +61,18 @@ const Home: React.FC = () => {
                     muted
                     loop
                     playsInline
-                    className="w-full h-[120%] object-cover object-center brightness-[0.5]"
+                    className="w-full h-[120%] object-cover object-center"
                 />
             ) : (
                 <img 
                     src={content.heroBackgroundImage || "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=2000&q=80"}
                     alt="Luxury Car Background" 
-                    className="w-full h-[120%] object-cover object-center brightness-[0.6]"
+                    className="w-full h-[120%] object-cover object-center"
                 />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/40 to-transparent" />
+            {/* Clearer overlay: Slight dark tint for text contrast, but keeping video vibrant */}
+            <div className="absolute inset-0 bg-black/10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/90 via-transparent to-black/20" />
         </motion.div>
 
         {/* Hero Content */}
@@ -87,11 +89,11 @@ const Home: React.FC = () => {
                     Premium Dealership
                 </motion.div>
                 
-                <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-[1.1] mb-8 tracking-tight whitespace-pre-line">
+                <motion.h1 variants={itemVariants} className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white leading-[1.1] mb-8 tracking-tight whitespace-pre-line text-shadow-lg">
                    {content.heroTitle}
                 </motion.h1>
                 
-                <motion.p variants={itemVariants} className="text-lg md:text-xl text-gray-300 font-light leading-relaxed max-w-xl mb-10 border-l-2 border-brand-red pl-6">
+                <motion.p variants={itemVariants} className="text-lg md:text-xl text-white font-medium leading-relaxed max-w-xl mb-10 border-l-4 border-brand-red pl-6 drop-shadow-md">
                     {content.heroSubtitle}
                 </motion.p>
                 
@@ -102,7 +104,7 @@ const Home: React.FC = () => {
                             {content.heroButtonText} <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                         </span>
                     </Link>
-                    <Link to="/showroom" className="group px-8 py-4 bg-white/5 backdrop-blur-md border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-colors">
+                    <Link to="/showroom" className="group px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold rounded-xl hover:bg-white/20 transition-colors shadow-lg">
                         Visit Showroom
                     </Link>
                 </motion.div>
@@ -116,8 +118,8 @@ const Home: React.FC = () => {
             transition={{ delay: 1.5, duration: 1 }}
             className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2"
         >
-            <span className="text-white/50 text-xs uppercase tracking-widest">Scroll</span>
-            <div className="w-6 h-10 border-2 border-white/20 rounded-full p-1">
+            <span className="text-white/70 text-xs uppercase tracking-widest font-bold">Scroll</span>
+            <div className="w-6 h-10 border-2 border-white/30 rounded-full p-1 backdrop-blur-sm">
                 <motion.div 
                     animate={{ y: [0, 12, 0] }}
                     transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
